@@ -2,200 +2,163 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darbhanga Sikho | Premium Language Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Darbhanga Sikho | Ultimate Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #030712; --glass: rgba(17, 24, 39, 0.7); --border: rgba(255, 255, 255, 0.1); }
-        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: white; scroll-behavior: smooth; }
+        :root { --bg: #020617; --accent: #3b82f6; --glass: rgba(15, 23, 42, 0.8); }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; overflow-x: hidden; }
         
-        .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); }
-        .glass-card { background: rgba(31, 41, 55, 0.4); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; transition: 0.4s; }
-        .glass-card:hover { border-color: #3b82f6; transform: translateY(-5px); box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.3); }
+        .glass { backdrop-filter: blur(16px); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); }
+        .glass-card { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; }
         
-        /* Video & Avatars */
-        #video-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); width: 100%; }
-        .video-box { position: relative; border-radius: 24px; overflow: hidden; aspect-ratio: 16/9; background: #000; border: 2px solid var(--border); }
+        /* Video Grid Responsive */
+        #video-grid { 
+            display: grid; 
+            gap: 12px; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            width: 100%; 
+            padding: 10px;
+        }
+        @media (min-width: 768px) { #video-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding: 20px; } }
+        
+        .video-container { position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 1/1; background: #000; border: 2px solid rgba(255,255,255,0.1); }
+        @media (min-width: 768px) { .video-container { aspect-ratio: 16/9; } }
+        
         video { width: 100%; height: 100%; object-fit: cover; }
         .mirror { transform: scaleX(-1); }
-        .avatar-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; items: center; justify-content: center; background: linear-gradient(45deg, #111827, #1f2937); z-index: 10; }
+        
+        .avatar-box { position: absolute; inset: 0; display: flex; flex-direction: column; items: center; justify-content: center; background: #0f172a; z-index: 5; }
+        
+        /* Navigation & Routing */
+        .page-view { display: none; min-height: 100vh; padding-top: 80px; }
+        .page-view.active { display: block; }
 
-        /* Responsive Chat Sidebar */
-        #chat-sidebar { transition: transform 0.3s ease-in-out; }
+        /* Mobile Chat Sidebar */
+        #chat-sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 300; }
         @media (max-width: 1024px) {
-            #chat-sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 85%; transform: translateX(100%); z-index: 250; }
-            #chat-sidebar.open { transform: translateX(0); }
+            #chat-sidebar { position: fixed; bottom: 0; left: 0; right: 0; height: 70vh; transform: translateY(100%); border-radius: 30px 30px 0 0; }
+            #chat-sidebar.open { transform: translateY(0); }
         }
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 16px; z-index: 1000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.5); animation: slideUp 0.3s ease forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .toast { position: fixed; top: 90px; right: 20px; padding: 12px 20px; border-radius: 12px; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-    <div id="toast-bin"></div>
-
-    <!-- NAVBAR -->
-    <header class="fixed top-0 w-full z-[100] p-4">
-        <nav class="max-w-7xl mx-auto h-16 glass rounded-2xl px-6 flex justify-between items-center">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="location.hash=''">
-                <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center font-black shadow-lg">DS</div>
-                <h1 class="text-lg font-extrabold tracking-tighter uppercase hidden sm:block">Darbhanga <span class="text-blue-500">Sikho</span></h1>
+    <!-- SHARED HEADER -->
+    <header class="fixed top-0 w-full z-[400] glass h-20 flex items-center px-6 justify-between border-b border-white/10">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="go('#home')">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black">DS</div>
+            <h1 class="font-extrabold text-xl tracking-tighter">DARBHANGA <span class="text-blue-500">SIKHO</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="auth-controls" class="flex gap-2">
+                <!-- Dynamic Auth Buttons -->
             </div>
-
-            <div class="flex items-center gap-4">
-                <button id="nav-host-btn" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-900/20">Start Practice</button>
-                <div id="auth-guest">
-                    <button onclick="openAuth('login')" class="text-sm font-bold opacity-80 hover:opacity-100">Sign In</button>
-                </div>
-                <div id="auth-user" class="hidden flex items-center gap-2 bg-white/5 p-1 pr-3 rounded-xl border border-white/10">
-                    <img id="nav-img" class="w-8 h-8 rounded-lg object-cover">
-                    <button onclick="handleLogout()" class="text-[10px] font-bold text-red-400 uppercase">Exit</button>
-                </div>
-            </div>
-        </nav>
+        </div>
     </header>
 
-    <!-- HERO & ROOMS -->
-    <main id="main-view" class="max-w-7xl mx-auto px-6 pt-32 pb-20">
-        <div class="flex flex-col md:flex-row items-center justify-between mb-16 gap-10">
-            <div class="max-w-2xl text-center md:text-left">
-                <span class="text-blue-500 font-bold tracking-widest text-xs uppercase mb-3 block">Bihari Learning Revolution</span>
-                <h2 class="text-5xl md:text-7xl font-black mb-6 leading-tight">Master English with <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Real People.</span></h2>
-                <p class="text-slate-400 text-lg mb-8">No bots. No boring exercises. Just live audio-visual conversations with learners from Darbhanga and beyond.</p>
-                <div class="flex flex-wrap justify-center md:justify-start gap-4">
-                    <div class="bg-white/5 px-4 py-2 rounded-lg border border-white/10 text-sm font-semibold">🔥 24/7 Active</div>
-                    <div class="bg-white/5 px-4 py-2 rounded-lg border border-white/10 text-sm font-semibold">🗣️ Multi-language</div>
-                </div>
-            </div>
-            <div class="w-64 h-64 md:w-96 md:h-96">
-                <!-- SVG Character Decoration -->
-                <img src="https://api.dicebear.com/7.x/bottts-neutral/svg?seed=learn" class="w-full h-full opacity-50 animate-pulse">
-            </div>
-        </div>
+    <div id="toast-bin"></div>
 
-        <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-bold">Active Practice Rooms</h3>
-            <div class="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-6"></div>
+    <!-- HOME PAGE -->
+    <section id="view-home" class="page-view container mx-auto px-6">
+        <div class="py-12 text-center md:text-left">
+            <h2 class="text-5xl md:text-7xl font-black mb-4">Talk Your Way to <span class="text-blue-500">Fluency.</span></h2>
+            <p class="text-slate-400 text-lg mb-8 max-w-xl">The first language exchange platform built for Darbhanga. Practice English, Hindi, or Maithili live.</p>
+            <button onclick="go('#room-create')" class="bg-blue-600 px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all">Start Session</button>
         </div>
-
-        <div id="rooms-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div id="room-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
             <!-- Room Cards -->
         </div>
-    </main>
+    </section>
 
-    <!-- FOOTER -->
-    <footer id="footer" class="border-t border-white/5 py-12 mt-20">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-slate-500 text-sm">
-            <div class="flex items-center gap-2">
-                <div class="w-6 h-6 bg-slate-800 rounded flex items-center justify-center font-bold text-[10px]">DS</div>
-                <span>&copy; 2024 Darbhanga Sikho. Made for learners.</span>
-            </div>
-            <div class="flex gap-8">
-                <a href="#" class="hover:text-white transition">Privacy</a>
-                <a href="#" class="hover:text-white transition">Terms</a>
-                <a href="#" class="hover:text-white transition">Support</a>
-            </div>
-        </div>
-    </footer>
-
-    <!-- MODALS (Auth & Create) -->
-    <div id="modal-auth" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass w-full max-w-md rounded-[32px] p-8 shadow-2xl">
-            <h3 id="auth-title" class="text-3xl font-black mb-2 text-center">Welcome</h3>
-            <p class="text-center text-slate-400 text-sm mb-8">Start your speaking journey today</p>
+    <!-- AUTH PAGE -->
+    <section id="view-auth" class="page-view container mx-auto px-6 flex items-center justify-center">
+        <div class="glass-card w-full max-w-md p-8">
+            <h3 id="auth-title" class="text-3xl font-bold mb-6">Welcome back</h3>
             <div class="space-y-4 mb-6">
-                <input id="auth-name" type="text" placeholder="Full Name" class="hidden w-full bg-black/40 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none transition-all">
-                <input id="auth-email" type="email" placeholder="Email" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none">
-                <input id="auth-pass" type="password" placeholder="Password" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl focus:border-blue-500 outline-none">
+                <input id="auth-name" type="text" placeholder="Full Name" class="hidden w-full bg-black/40 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500">
+                <input id="auth-email" type="email" placeholder="Email" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500">
+                <input id="auth-pass" type="password" placeholder="Password" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500">
             </div>
-            <button id="auth-main-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold shadow-lg hover:bg-blue-500 transition-all">Continue</button>
-            <div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div><div class="relative flex justify-center text-xs uppercase"><span class="bg-gray-900 px-2 text-slate-500">Or</span></div></div>
-            <button id="auth-google-btn" class="w-full py-4 bg-white text-black rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-gray-200">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5"> Google
+            <button id="btn-auth-submit" class="w-full py-4 bg-blue-600 rounded-2xl font-bold mb-4 shadow-lg">Continue</button>
+            <button id="btn-google" class="w-full py-4 bg-white text-black rounded-2xl font-bold flex items-center justify-center gap-2 mb-6">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+                Google
             </button>
-            <p id="auth-switch" class="mt-8 text-center text-sm text-slate-400 cursor-pointer">New here? <span class="text-blue-400 font-bold">Sign Up</span></p>
-            <button onclick="closeModals()" class="w-full mt-4 text-xs text-slate-600 uppercase">Close</button>
+            <p id="auth-switch" class="text-center text-sm text-slate-400 cursor-pointer">Need an account? <span class="text-blue-500">Sign Up</span></p>
         </div>
-    </div>
+    </section>
 
-    <div id="modal-create" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass w-full max-w-md p-8 rounded-[32px]">
-            <h3 class="text-2xl font-bold mb-6">Create Speaking Room</h3>
-            <div class="space-y-5">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Topic</label>
-                    <input id="room-topic" type="text" placeholder="e.g., Weekend Plans Discussion" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl mt-1">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Language</label>
-                    <select id="room-lang" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl mt-1 appearance-none">
-                        <option>English</option><option>Hindi</option><option>Maithili</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Max Participants</label>
-                    <select id="room-limit" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl mt-1 appearance-none">
-                        <option value="2">2 Learners (1v1)</option><option value="4" selected>4 Learners (Small Group)</option><option value="8">8 Learners (Public Hall)</option>
-                    </select>
-                </div>
-                <button id="room-create-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold mt-4 shadow-lg">Start Live Session</button>
+    <!-- CREATE ROOM PAGE -->
+    <section id="view-room-create" class="page-view container mx-auto px-6 flex items-center justify-center">
+        <div class="glass-card w-full max-w-md p-8">
+            <h3 class="text-2xl font-bold mb-6">Room Settings</h3>
+            <div class="space-y-4">
+                <input id="room-topic" type="text" placeholder="Topic: e.g. Daily Routine" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl outline-none">
+                <select id="room-lang" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl">
+                    <option>English</option><option>Hindi</option><option>Maithili</option>
+                </select>
+                <select id="room-limit" class="w-full bg-black/40 border border-white/10 p-4 rounded-2xl">
+                    <option value="2">2 People</option><option value="4" selected>4 People</option><option value="8">8 People</option>
+                </select>
+                <button id="btn-create-now" class="w-full py-4 bg-blue-600 rounded-2xl font-bold">Launch Room</button>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- CALL INTERFACE -->
-    <div id="call-view" class="fixed inset-0 z-[250] hidden bg-[#030712] flex flex-col lg:flex-row overflow-hidden">
-        <div class="flex-1 flex flex-col relative h-full">
-            <!-- Call Header -->
-            <div class="p-4 glass flex justify-between items-center absolute top-0 w-full z-10">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleChat()" class="lg:hidden p-2 bg-white/5 rounded-lg">💬</button>
-                    <div>
-                        <h4 id="call-topic" class="font-bold text-sm text-blue-400 truncate max-w-[150px]">Session</h4>
-                        <p id="participant-count" class="text-[10px] text-slate-500 font-bold uppercase">1 Online</p>
-                    </div>
+    <!-- LIVE SESSION ROOM -->
+    <section id="view-session" class="fixed inset-0 z-[500] hidden bg-black flex flex-col lg:flex-row overflow-hidden">
+        <div class="flex-1 flex flex-col h-full relative">
+            <!-- Session Header -->
+            <div class="p-4 glass flex justify-between items-center z-20">
+                <div>
+                    <h4 id="sess-topic" class="font-bold text-blue-400 text-sm md:text-base">Practice Session</h4>
+                    <p id="sess-count" class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">1 Member Online</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="copyRoomLink()" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold transition">Share</button>
-                    <button onclick="leaveSession()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-xs font-bold transition">Leave</button>
+                    <button onclick="copyLink()" class="p-2 bg-white/10 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg></button>
+                    <button onclick="leaveSession()" class="bg-red-600 px-4 py-2 rounded-xl font-bold text-xs">EXIT</button>
                 </div>
             </div>
 
-            <!-- Video Wall -->
-            <div id="video-grid" class="flex-1 mt-20 p-6 overflow-y-auto align-content-start">
-                <div class="video-box" id="local-box">
+            <!-- Video Grid -->
+            <div id="video-grid" class="flex-1 overflow-y-auto">
+                <div class="video-container" id="local-box">
                     <video id="localVideo" class="mirror" autoplay playsinline muted></video>
-                    <div id="local-avatar" class="avatar-overlay">
-                        <img id="local-avatar-img" class="w-24 h-24 rounded-full border-4 border-blue-500 shadow-2xl">
-                        <span class="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">You (Paused)</span>
+                    <div id="local-avatar" class="avatar-box">
+                        <img id="my-avatar-img" class="w-24 h-24 rounded-full border-4 border-blue-500">
+                        <span class="mt-4 text-[10px] font-black opacity-50">YOU (MUTED)</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Toolbar -->
-            <div class="p-6 bg-gray-950/80 backdrop-blur-xl border-t border-white/5 flex justify-center gap-6">
-                <button id="btn-mic" class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-xl transition active:scale-95">🎤</button>
-                <button id="btn-cam" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center shadow-xl transition active:scale-95">📷</button>
+            <!-- Floating Mobile Toolbar -->
+            <div class="p-4 bg-slate-900/90 border-t border-white/10 flex justify-center gap-6 lg:gap-10">
+                <button id="btn-mic" class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg></button>
+                <button id="btn-cam" class="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+                <button onclick="toggleChat()" class="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center shadow-lg lg:hidden"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg></button>
             </div>
         </div>
 
-        <!-- Right Side: Chat Sidebar -->
-        <div id="chat-sidebar" class="lg:w-96 glass h-full flex flex-col">
+        <!-- Session Chat -->
+        <div id="chat-sidebar" class="lg:w-96 glass flex flex-col h-full">
             <div class="p-5 border-b border-white/10 flex justify-between items-center">
-                <span class="text-xs font-black text-slate-500 uppercase tracking-widest">Live Room Chat</span>
-                <button onclick="toggleChat()" class="lg:hidden text-slate-500">✕</button>
+                <span class="font-bold text-xs uppercase tracking-tighter opacity-50">Room Messages</span>
+                <button onclick="toggleChat()" class="lg:hidden text-slate-500 font-bold">CLOSE</button>
             </div>
-            <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4"></div>
-            <form id="chat-form" class="p-4 bg-black/20 flex gap-2">
-                <input id="chat-input" type="text" placeholder="Say something..." class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl text-sm outline-none focus:border-blue-500 transition-all">
-                <button class="bg-blue-600 p-3 rounded-xl font-bold">➔</button>
+            <div id="sess-chat-msgs" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+            <form id="sess-chat-form" class="p-4 bg-black flex gap-2">
+                <input id="sess-chat-input" type="text" placeholder="Type a message..." class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl outline-none text-sm">
+                <button class="bg-blue-600 p-3 rounded-xl">➔</button>
             </form>
         </div>
-    </div>
+    </section>
 
-    <!-- FIREBASE & LOGIC -->
+    <!-- CORE LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -215,7 +178,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const gProvider = new GoogleAuthProvider();
-        const rtcConf = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
+        const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
         let currentUser = null;
         let localStream = null;
@@ -223,104 +186,89 @@
         let peers = {};
         let authMode = 'login';
 
-        // --- AUTH & ROUTING ---
+        // --- ROUTER & NAVIGATION ---
+        function go(hash) {
+            window.location.hash = hash;
+            const route = hash.split('/')[0];
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            document.getElementById('view-session').classList.add('hidden');
+
+            if (route === '#home' || hash === '') document.getElementById('view-home').classList.add('active');
+            else if (route === '#auth') document.getElementById('view-auth').classList.add('active');
+            else if (route === '#room-create') document.getElementById('view-room-create').classList.add('active');
+            else if (route === '#room') handleRoomRoute(hash.split('/')[1]);
+        }
+
+        window.go = go;
+        window.addEventListener('hashchange', () => go(window.location.hash));
+
+        // --- AUTH MODULE ---
         onAuthStateChanged(auth, (u) => {
             currentUser = u;
+            const ctrl = document.getElementById('auth-controls');
             if (u) {
-                document.getElementById('auth-guest').classList.add('hidden');
-                document.getElementById('auth-user').classList.remove('hidden');
                 const pfp = u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.uid}`;
-                document.getElementById('nav-img').src = pfp;
-                document.getElementById('local-avatar-img').src = pfp;
-                closeModals();
-                checkHashRoute();
+                ctrl.innerHTML = `<img src="${pfp}" class="w-10 h-10 rounded-full border border-blue-500"><button onclick="logout()" class="text-xs font-bold text-red-500 ml-2">OUT</button>`;
+                document.getElementById('my-avatar-img').src = pfp;
+                if(window.location.hash.startsWith('#auth')) go('#home');
             } else {
-                document.getElementById('auth-guest').classList.remove('hidden');
-                document.getElementById('auth-user').classList.add('hidden');
+                ctrl.innerHTML = `<button onclick="go('#auth')" class="bg-blue-600 px-6 py-2 rounded-xl font-bold text-sm">Join Us</button>`;
             }
         });
 
-        // Hash-based Routing
-        async function checkHashRoute() {
-            const hash = window.location.hash.substring(1);
-            if (hash && hash.length > 5) {
-                const roomRef = doc(db, 'rooms', hash);
-                const snap = await getDoc(roomRef);
-                if (snap.exists() && !activeRoomId) {
-                    window.joinRoom(hash);
-                }
-            }
-        }
-        window.addEventListener('hashchange', checkHashRoute);
-
-        window.openAuth = (mode) => {
-            authMode = mode;
-            document.getElementById('modal-auth').classList.remove('hidden');
-            document.getElementById('auth-title').innerText = mode === 'login' ? 'Welcome Back' : 'Create Account';
-            document.getElementById('auth-name').classList.toggle('hidden', mode === 'login');
-            document.getElementById('auth-switch').innerHTML = mode === 'login' ? "New here? <span class='text-blue-400 font-bold'>Sign Up</span>" : "Already have an account? <span class='text-blue-400 font-bold'>Login</span>";
+        document.getElementById('auth-switch').onclick = () => {
+            authMode = authMode === 'login' ? 'signup' : 'login';
+            document.getElementById('auth-title').innerText = authMode === 'login' ? 'Welcome Back' : 'Join the Club';
+            document.getElementById('auth-name').classList.toggle('hidden', authMode === 'login');
+            document.getElementById('auth-switch').innerHTML = authMode === 'login' ? "Need an account? <span class='text-blue-500'>Sign Up</span>" : "Have an account? <span class='text-blue-500'>Login</span>";
         };
 
-        document.getElementById('auth-switch').onclick = () => openAuth(authMode === 'login' ? 'signup' : 'login');
-
-        document.getElementById('auth-main-btn').onclick = async () => {
-            const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value, n = document.getElementById('auth-name').value;
+        document.getElementById('btn-auth-submit').onclick = async () => {
+            const e = document.getElementById('auth-email').value;
+            const p = document.getElementById('auth-pass').value;
             try {
                 if (authMode === 'login') await signInWithEmailAndPassword(auth, e, p);
                 else {
                     const res = await createUserWithEmailAndPassword(auth, e, p);
-                    await updateProfile(res.user, { displayName: n });
+                    await updateProfile(res.user, { displayName: document.getElementById('auth-name').value });
                     location.reload();
                 }
             } catch (err) { toast(err.message, 'error'); }
         };
 
-        document.getElementById('auth-google-btn').onclick = () => signInWithPopup(auth, gProvider);
-        window.handleLogout = () => signOut(auth);
+        document.getElementById('btn-google').onclick = () => signInWithPopup(auth, gProvider);
+        window.logout = () => signOut(auth);
 
         // --- ROOMS LISTING ---
         onSnapshot(collection(db, 'rooms'), (snap) => {
-            const grid = document.getElementById('rooms-grid');
-            grid.innerHTML = '';
+            const list = document.getElementById('room-list');
+            list.innerHTML = '';
             snap.forEach(d => {
                 const r = d.data();
-                if (!r.participants || r.participants.length === 0) return;
-                const card = document.createElement('div');
-                card.className = "glass-card p-6 flex flex-col";
-                card.innerHTML = `
+                if(!r.participants || r.participants.length === 0) return;
+                const el = document.createElement('div');
+                el.className = "glass-card p-6 flex flex-col";
+                el.innerHTML = `
                     <div class="flex justify-between items-start mb-6">
-                        <div class="flex -space-x-3">
-                            <img src="${r.creatorAvatar}" class="w-10 h-10 rounded-xl border-2 border-gray-900 object-cover">
-                        </div>
-                        <span class="bg-blue-500/10 text-blue-400 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border border-blue-500/20">${r.lang}</span>
+                        <img src="${r.creatorAvatar}" class="w-12 h-12 rounded-xl border border-blue-500">
+                        <span class="bg-blue-500/10 text-blue-500 text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-widest">${r.lang}</span>
                     </div>
-                    <h4 class="text-xl font-bold mb-2">${r.topic}</h4>
-                    <div class="flex items-center gap-2 text-slate-500 text-xs mb-6">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        ${r.participants.length} / ${r.limit} Learners Joined
-                    </div>
-                    <button onclick="joinRoom('${d.id}')" class="mt-auto w-full py-4 bg-white/5 hover:bg-blue-600 text-white font-bold rounded-2xl border border-white/10 transition-all">Enter Room</button>
+                    <h4 class="text-xl font-bold mb-1">${r.topic}</h4>
+                    <p class="text-xs text-slate-500 mb-6 font-bold uppercase tracking-tighter">${r.participants.length} Learners Joined</p>
+                    <button onclick="go('#room/${d.id}')" class="mt-auto w-full py-4 bg-white/5 hover:bg-blue-600 text-white font-bold rounded-2xl border border-white/10 transition-all">Join Live Talk</button>
                 `;
-                grid.appendChild(card);
+                list.appendChild(el);
             });
         });
 
-        // --- LIVE SESSION LOGIC ---
-        document.getElementById('nav-host-btn').onclick = () => {
-            if (!currentUser) return openAuth('login');
-            document.getElementById('modal-create').classList.remove('hidden');
-        };
-
-        document.getElementById('room-create-btn').onclick = async () => {
-            const topic = document.getElementById('room-topic').value || "General Practice";
+        // --- ROOM SESSION LOGIC ---
+        document.getElementById('btn-create-now').onclick = async () => {
+            if (!currentUser) return go('#auth');
+            const topic = document.getElementById('room-topic').value || "English Talk";
             const lang = document.getElementById('room-lang').value;
             const limitVal = parseInt(document.getElementById('room-limit').value);
 
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                document.getElementById('localVideo').srcObject = localStream;
-                localStream.getVideoTracks()[0].enabled = false; // Start cam off
-
                 const ref = await addDoc(collection(db, 'rooms'), {
                     topic, lang, limit: limitVal,
                     creator: currentUser.uid,
@@ -328,43 +276,44 @@
                     participants: [currentUser.uid],
                     createdAt: serverTimestamp()
                 });
-                activeRoomId = ref.id;
-                window.location.hash = ref.id;
-                enterView(topic);
-            } catch (err) { toast("Mic/Camera Denied", "error"); }
+                go(`#room/${ref.id}`);
+            } catch (err) { toast(err.message, 'error'); }
         };
 
-        window.joinRoom = async (id) => {
-            if (!currentUser) return openAuth('login');
+        async function handleRoomRoute(id) {
+            if (!currentUser) return go('#auth');
             try {
-                const snap = await getDoc(doc(db, 'rooms', id));
-                if (snap.data().participants.length >= snap.data().limit) return toast("Room is Full", "error");
+                const rRef = doc(db, 'rooms', id);
+                const rSnap = await getDoc(rRef);
+                if (!rSnap.exists()) return go('#home');
+                
+                if (rSnap.data().participants.length >= rSnap.data().limit && !rSnap.data().participants.includes(currentUser.uid)) {
+                    toast("Room full!", "error");
+                    return go('#home');
+                }
 
+                activeRoomId = id;
                 localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
                 localStream.getVideoTracks()[0].enabled = false;
 
-                activeRoomId = id;
-                window.location.hash = id;
-                await updateDoc(doc(db, 'rooms', id), { participants: arrayUnion(currentUser.uid) });
-                enterView(snap.data().topic);
-            } catch (err) { toast("Join Failed", "error"); }
-        };
+                if (!rSnap.data().participants.includes(currentUser.uid)) {
+                    await updateDoc(rRef, { participants: arrayUnion(currentUser.uid) });
+                }
 
-        function enterView(topic) {
-            closeModals();
-            document.getElementById('call-view').classList.remove('hidden');
-            document.getElementById('call-topic').innerText = topic;
-            initWebRTC();
-            initChat();
+                document.getElementById('view-session').classList.remove('hidden');
+                document.getElementById('sess-topic').innerText = rSnap.data().topic;
+                startWebRTC();
+                startChat();
+            } catch (err) { toast("Enable Mic & Camera to join", "error"); go('#home'); }
         }
 
-        // --- WEBRTC CORE (Polite Mesh) ---
-        function initWebRTC() {
+        // --- WEBRTC CORE (The Fix) ---
+        function startWebRTC() {
             onSnapshot(doc(db, 'rooms', activeRoomId), (snap) => {
                 const data = snap.data();
                 if (!data) return;
-                document.getElementById('participant-count').innerText = `${data.participants.length} Learners Online`;
+                document.getElementById('sess-count').innerText = `${data.participants.length} Members Online`;
                 data.participants.forEach(pId => {
                     if (pId !== currentUser.uid && !peers[pId]) {
                         if (currentUser.uid < pId) setupPeer(pId, true);
@@ -376,7 +325,7 @@
                 snap.docChanges().forEach(async change => {
                     if (change.type === 'added') {
                         const sig = change.doc.data();
-                        if (sig.to === currentUser.uid) handleSignal(sig);
+                        if (sig.to === currentUser.uid) handleIncomingSignal(sig);
                     }
                 });
             });
@@ -384,9 +333,8 @@
 
         async function setupPeer(targetId, isOfferer) {
             if (peers[targetId]) return;
-            const pc = new RTCPeerConnection(rtcConf);
+            const pc = new RTCPeerConnection(servers);
             peers[targetId] = pc;
-
             localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
             pc.onicecandidate = (e) => {
@@ -395,22 +343,23 @@
 
             pc.ontrack = (e) => {
                 if (document.getElementById(`vid-${targetId}`)) return;
-                const box = document.createElement('div');
-                box.className = "video-box";
-                box.id = `box-${targetId}`;
-                box.innerHTML = `
+                const container = document.createElement('div');
+                container.className = "video-container";
+                container.id = `box-${targetId}`;
+                container.innerHTML = `
                     <video id="vid-${targetId}" autoplay playsinline></video>
-                    <div id="av-${targetId}" class="avatar-overlay">
-                        <img class="w-24 h-24 rounded-full border-4 border-white/10" src="https://api.dicebear.com/7.x/adventurer/svg?seed=${targetId}">
-                        <span class="mt-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Partner Speaking</span>
+                    <div id="av-${targetId}" class="avatar-box">
+                        <img class="w-20 h-20 rounded-full border-2 border-white/20 shadow-2xl" src="https://api.dicebear.com/7.x/adventurer/svg?seed=${targetId}">
+                        <span class="mt-4 text-[8px] font-black opacity-40 uppercase">Learning Partner</span>
                     </div>`;
-                document.getElementById('video-grid').appendChild(box);
+                document.getElementById('video-grid').appendChild(container);
                 document.getElementById(`vid-${targetId}`).srcObject = e.streams[0];
                 
-                const remoteTrack = e.streams[0].getVideoTracks()[0];
-                if (remoteTrack) {
-                    remoteTrack.onmute = () => document.getElementById(`av-${targetId}`).classList.remove('hidden');
-                    remoteTrack.onunmute = () => document.getElementById(`av-${targetId}`).classList.add('hidden');
+                const remoteVideoTrack = e.streams[0].getVideoTracks()[0];
+                if(remoteVideoTrack) {
+                    const sync = () => document.getElementById(`av-${targetId}`).style.display = remoteVideoTrack.enabled ? 'none' : 'flex';
+                    remoteVideoTrack.onmute = sync; remoteVideoTrack.onunmute = sync;
+                    sync();
                 }
             };
 
@@ -421,41 +370,46 @@
             }
         }
 
-        async function handleSignal(sig) {
+        async function handleIncomingSignal(sig) {
             if (!peers[sig.from]) await setupPeer(sig.from, false);
             const pc = peers[sig.from];
-            if (sig.type === 'offer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(sig));
-                const ans = await pc.createAnswer();
-                await pc.setLocalDescription(ans);
-                await addDoc(collection(db, `rooms/${activeRoomId}/signals`), { type: 'answer', from: currentUser.uid, to: sig.from, sdp: ans.sdp });
-            } else if (sig.type === 'answer') await pc.setRemoteDescription(new RTCSessionDescription(sig));
-            else if (sig.type === 'ice') await pc.addIceCandidate(new RTCIceCandidate(sig.cand));
+            try {
+                if (sig.type === 'offer') {
+                    await pc.setRemoteDescription(new RTCSessionDescription(sig));
+                    const ans = await pc.createAnswer();
+                    await pc.setLocalDescription(ans);
+                    await addDoc(collection(db, `rooms/${activeRoomId}/signals`), { type: 'answer', from: currentUser.uid, to: sig.from, sdp: ans.sdp });
+                } else if (sig.type === 'answer') {
+                    await pc.setRemoteDescription(new RTCSessionDescription(sig));
+                } else if (sig.type === 'ice') {
+                    await pc.addIceCandidate(new RTCIceCandidate(sig.cand));
+                }
+            } catch (err) { console.warn(err); }
         }
 
-        // --- CHAT MODULE ---
-        function initChat() {
+        // --- CHAT SYSTEM ---
+        function startChat() {
             const q = query(collection(db, `rooms/${activeRoomId}/chat`), orderBy('time', 'asc'));
             onSnapshot(q, (snap) => {
-                const box = document.getElementById('chat-messages');
+                const box = document.getElementById('sess-chat-msgs');
                 box.innerHTML = '';
                 snap.forEach(m => {
                     const d = m.data();
                     const el = document.createElement('div');
-                    el.className = "p-3 bg-white/5 rounded-2xl border border-white/5";
-                    el.innerHTML = `<span class="block text-[10px] font-bold text-blue-400 uppercase mb-1">${d.name}</span><p class="text-sm">${d.text}</p>`;
+                    el.className = "p-3 bg-white/5 rounded-2xl border-l-2 border-blue-500";
+                    el.innerHTML = `<span class="block text-[10px] font-bold text-blue-500 uppercase mb-1">${d.name}</span><p class="text-sm">${d.text}</p>`;
                     box.appendChild(el);
                 });
                 box.scrollTop = box.scrollHeight;
             });
         }
 
-        document.getElementById('chat-form').onsubmit = async (e) => {
+        document.getElementById('sess-chat-form').onsubmit = async (e) => {
             e.preventDefault();
-            const inp = document.getElementById('chat-input');
-            if (!inp.value.trim()) return;
-            await addDoc(collection(db, `rooms/${activeRoomId}/chat`), { name: currentUser.displayName || "Learner", text: inp.value, time: serverTimestamp() });
-            inp.value = '';
+            const input = document.getElementById('sess-chat-input');
+            if (!input.value.trim()) return;
+            await addDoc(collection(db, `rooms/${activeRoomId}/chat`), { name: currentUser.displayName || "Learner", text: input.value, time: serverTimestamp() });
+            input.value = '';
         };
 
         // --- UTILS ---
@@ -463,21 +417,20 @@
             if (activeRoomId && currentUser) {
                 await updateDoc(doc(db, 'rooms', activeRoomId), { participants: arrayRemove(currentUser.uid) });
             }
-            window.location.hash = '';
+            location.href = '#home';
             location.reload();
         };
 
-        window.copyRoomLink = () => {
+        window.copyLink = () => {
             navigator.clipboard.writeText(window.location.href);
-            toast("Room link copied!", "success");
+            toast("Link Copied!", "success");
         };
 
         window.toggleChat = () => document.getElementById('chat-sidebar').classList.toggle('open');
-        window.closeModals = () => document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
 
         function toast(msg, type) {
             const el = document.createElement('div');
-            el.className = `toast ${type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`;
+            el.className = `toast font-bold shadow-2xl ${type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`;
             el.innerText = msg;
             document.getElementById('toast-bin').appendChild(el);
             setTimeout(() => el.remove(), 3000);
@@ -491,10 +444,13 @@
 
         document.getElementById('btn-cam').onclick = function() {
             const s = localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
-            document.getElementById('local-avatar').classList.toggle('hidden', s);
+            document.getElementById('local-avatar').style.display = s ? 'none' : 'flex';
             this.classList.toggle('bg-blue-600', s);
             this.classList.toggle('bg-slate-800', !s);
         };
+
+        // Init
+        go(window.location.hash);
     </script>
 </body>
 </html>
