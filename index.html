@@ -3,30 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darbhanga Sikho | Live Hub</title>
+    <title>Darbhanga Sikho | Ultimate Live Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #020617; --accent: #3b82f6; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: white; margin: 0; }
+        .glass { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .ds-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 24px; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
         .ds-card:hover { border-color: var(--accent); transform: translateY(-4px); }
         
-        /* Video Grid Logic */
-        #video-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding: 20px; align-content: start; }
+        #video-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding: 20px; }
         .video-box { position: relative; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 16/9; border: 2px solid #1e293b; }
         video { width: 100%; height: 100%; object-fit: cover; }
-        .local-video { transform: scaleX(-1); } /* Mirror local cam */
+        .mirror { transform: scaleX(-1); }
         
-        .avatar-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; items: center; justify-content: center; background: radial-gradient(circle, #1e293b, #020617); z-index: 10; transition: 0.3s; }
+        .avatar-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; items: center; justify-content: center; background: #0f172a; z-index: 10; }
         .hidden { display: none !important; }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-
-        /* Toast Styling */
         .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; z-index: 1000; font-weight: 600; animation: popUp 0.3s ease; }
         @keyframes popUp { from { bottom: 0; opacity: 0; } to { bottom: 20px; opacity: 1; } }
     </style>
@@ -35,52 +28,52 @@
 
     <div id="toast-bin"></div>
 
-    <!-- HEADER -->
+    <!-- NAVBAR -->
     <header class="fixed top-0 w-full z-50 glass">
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg shadow-blue-900/20">DS</div>
-                <h1 class="text-xl font-extrabold tracking-tighter uppercase">Darbhanga <span class="text-blue-500">Sikho</span></h1>
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black shadow-lg">DS</div>
+                <h1 class="text-xl font-extrabold tracking-tighter">DARBHANGA <span class="text-blue-500">SIKHO</span></h1>
             </div>
 
             <div class="flex items-center gap-4">
-                <button id="btn-create-start" class="hidden md:block bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-full font-bold text-sm transition-all">Start Session</button>
-                <div id="auth-section">
-                    <button onclick="toggleAuth('login')" class="px-5 py-2 text-sm font-bold border border-white/10 rounded-full hover:bg-white/5">Sign In</button>
+                <button id="nav-create-btn" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-full font-bold text-sm transition-all">Start Session</button>
+                <div id="auth-ui-guest">
+                    <button onclick="openAuth('login')" class="px-5 py-2 text-sm font-bold border border-white/10 rounded-full hover:bg-white/5">Sign In</button>
                 </div>
-                <div id="user-section" class="hidden flex items-center gap-3 bg-slate-900 p-1 pr-4 rounded-full border border-slate-800">
-                    <img id="nav-pfp" class="w-10 h-10 rounded-full object-cover border-2 border-blue-500">
-                    <button onclick="logout()" class="text-xs text-red-500 font-bold uppercase tracking-widest ml-2">Logout</button>
+                <div id="auth-ui-user" class="hidden flex items-center gap-3 bg-slate-900 p-1 pr-4 rounded-full border border-slate-800">
+                    <img id="nav-user-img" class="w-10 h-10 rounded-full object-cover border-2 border-blue-500">
+                    <button onclick="handleLogout()" class="text-xs text-red-500 font-bold uppercase">Logout</button>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- HERO / ROOM LIST -->
     <main class="max-w-7xl mx-auto px-6 pt-32 pb-20">
-        <div class="mb-12 text-center md:text-left">
-            <h2 class="text-4xl md:text-6xl font-black mb-4">Practice <span class="text-blue-500">Languages</span> Live.</h2>
-            <p class="text-slate-400 text-lg">Join a room to start talking. No downloads, just learning.</p>
+        <div class="mb-12">
+            <h2 class="text-4xl font-black mb-2">Live Language Rooms</h2>
+            <p class="text-slate-400">Join a room to start practicing. You must be logged in to participate.</p>
         </div>
-        
-        <div id="room-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Rooms appear here -->
+        <div id="room-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Rooms dynamically injected here -->
         </div>
     </main>
 
-    <!-- AUTH MODAL -->
+    <!-- AUTH MODAL (Login/Signup) -->
     <div id="modal-auth" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-slate-900 w-full max-w-md rounded-[32px] p-8 border border-slate-800">
             <h3 id="auth-title" class="text-2xl font-bold mb-6 text-center text-blue-400">Welcome Back</h3>
             <div class="space-y-4 mb-6">
-                <input id="auth-name" type="text" placeholder="Full Name" class="hidden w-full bg-black border border-slate-700 p-4 rounded-2xl outline-none focus:border-blue-500">
+                <input id="auth-name" type="text" placeholder="Your Full Name" class="hidden w-full bg-black border border-slate-700 p-4 rounded-2xl outline-none focus:border-blue-500">
                 <input id="auth-email" type="email" placeholder="Email Address" class="w-full bg-black border border-slate-700 p-4 rounded-2xl outline-none focus:border-blue-500">
                 <input id="auth-pass" type="password" placeholder="Password" class="w-full bg-black border border-slate-700 p-4 rounded-2xl outline-none focus:border-blue-500">
             </div>
-            <button id="auth-btn-main" class="w-full py-4 bg-blue-600 rounded-2xl font-bold mb-4 shadow-lg hover:bg-blue-500 transition-all">Proceed</button>
-            <button id="auth-btn-google" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-white/10 transition-all">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5"> Login with Google
+            <button id="auth-action-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold mb-4 shadow-lg hover:bg-blue-500">Proceed</button>
+            <button id="auth-google-btn" class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-white/10">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5"> Google Login
             </button>
-            <p id="auth-switch" class="mt-6 text-center text-sm text-slate-400 cursor-pointer hover:text-white">Don't have an account? Sign Up</p>
+            <p id="auth-toggle-text" class="mt-6 text-center text-sm text-slate-400 cursor-pointer hover:text-white">Don't have an account? Sign Up</p>
             <button onclick="closeModals()" class="w-full mt-4 text-slate-600 text-xs uppercase tracking-widest">Close</button>
         </div>
     </div>
@@ -88,178 +81,168 @@
     <!-- CREATE ROOM MODAL -->
     <div id="modal-create" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-black/80">
         <div class="bg-slate-900 w-full max-w-md p-8 rounded-[32px] border border-slate-800">
-            <h3 class="text-2xl font-bold mb-6 text-blue-400">Room Settings</h3>
+            <h3 class="text-2xl font-bold mb-6 text-blue-400">Host New Room</h3>
             <div class="space-y-4">
-                <input id="room-topic" type="text" placeholder="Topic: Daily Conversation" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white outline-none">
-                <select id="room-lang" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white outline-none">
+                <input id="inp-room-topic" type="text" placeholder="Room Topic (e.g. IELTS Practice)" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white outline-none">
+                <select id="inp-room-lang" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white">
                     <option>English</option><option>Hindi</option><option>Maithili</option>
                 </select>
-                <select id="room-limit" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white outline-none">
+                <select id="inp-room-limit" class="w-full bg-black border border-slate-700 p-4 rounded-2xl text-white">
                     <option value="2">2 People</option><option value="4" selected>4 People</option><option value="6">6 People</option>
                 </select>
-                <button id="room-confirm-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold hover:bg-blue-500">Create Room & Go Live</button>
+                <button id="confirm-create-btn" class="w-full py-4 bg-blue-600 rounded-2xl font-bold hover:bg-blue-500">Go Live Now</button>
                 <button onclick="closeModals()" class="w-full text-slate-500 text-sm">Cancel</button>
             </div>
         </div>
     </div>
 
-    <!-- CALL SCREEN (FULLSCREEN) -->
+    <!-- VIDEO CALL OVERLAY -->
     <div id="call-screen" class="fixed inset-0 z-[200] hidden bg-black flex flex-col lg:flex-row">
         <div class="flex-1 flex flex-col h-full relative">
-            <!-- Toolbar Top -->
             <div class="p-4 flex justify-between items-center glass absolute top-0 w-full z-20">
-                <div>
-                    <h4 id="call-topic-name" class="font-bold text-blue-400">Session</h4>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Live Multi-User Mesh</p>
-                </div>
-                <button onclick="endSession()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full font-bold text-xs uppercase tracking-widest transition-all">Leave Room</button>
+                <h4 id="display-topic" class="font-bold text-blue-400">Live Session</h4>
+                <button onclick="leaveRoom()" class="bg-red-600 px-6 py-2 rounded-full font-bold text-xs uppercase tracking-widest">End Session</button>
             </div>
             
-            <!-- Video Grid -->
             <div id="video-grid" class="flex-1 mt-20 overflow-y-auto">
                 <div class="video-box" id="local-box">
-                    <video id="localVideo" class="local-video" autoplay playsinline muted></video>
-                    <div id="local-avatar-ui" class="avatar-overlay">
-                        <img id="local-avatar-img" class="w-24 h-24 rounded-full border-4 border-blue-500 mb-2">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Camera Off</span>
+                    <video id="localVideo" class="mirror" autoplay playsinline muted></video>
+                    <div id="local-avatar" class="avatar-overlay">
+                        <img id="local-img" class="w-24 h-24 rounded-full border-4 border-blue-500 mb-2">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase">You (Camera Off)</span>
                     </div>
                 </div>
-                <!-- Remotes will be injected here -->
             </div>
 
-            <!-- Controls Bottom -->
-            <div class="p-6 bg-slate-950/80 backdrop-blur-xl flex justify-center gap-6 border-t border-white/5">
-                <button id="mic-btn" class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-xl hover:scale-110 transition-all">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"></path></svg>
-                </button>
-                <button id="cam-btn" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center shadow-xl hover:scale-110 transition-all">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm9 4a4 4 0 100 8 4 4 0 000-8z"></path></svg>
-                </button>
+            <div class="p-6 bg-slate-950 flex justify-center gap-6 border-t border-white/5">
+                <button id="toggle-mic" class="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center">Mic</button>
+                <button id="toggle-cam" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center">Cam</button>
             </div>
         </div>
 
-        <!-- Chat Sidebar -->
-        <div id="chat-sidebar" class="w-full lg:w-96 bg-slate-950 border-l border-white/5 flex flex-col h-full">
-            <div class="p-4 border-b border-white/5 font-black text-xs text-slate-500 uppercase tracking-widest">Room Chat</div>
-            <div id="chat-msgs" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+        <div class="w-full lg:w-96 bg-slate-950 border-l border-white/5 flex flex-col h-full">
+            <div class="p-4 border-b border-white/5 font-black text-xs text-slate-500 uppercase tracking-widest">Chat</div>
+            <div id="chat-msgs" class="flex-1 p-4 overflow-y-auto space-y-3"></div>
             <form id="chat-form" class="p-4 bg-black flex gap-2">
-                <input id="chat-input" type="text" placeholder="Type message..." class="flex-1 bg-slate-900 p-3 rounded-xl outline-none text-sm border border-slate-800 focus:border-blue-500">
-                <button class="bg-blue-600 px-4 rounded-xl font-bold hover:bg-blue-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </button>
+                <input id="chat-input" type="text" placeholder="Message..." class="flex-1 bg-slate-900 p-3 rounded-xl outline-none text-sm border border-slate-800">
+                <button class="bg-blue-600 px-4 rounded-xl font-bold">Send</button>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, updateDoc, setDoc, query, orderBy, limit, serverTimestamp, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // FIREBASE CONFIG
         const firebaseConfig = {
-  apiKey: "AIzaSyAKlo2eBKCQAeC3PkRz45ntdhYjH9YS3cE",
-  authDomain: "eng4world-f78a2.firebaseapp.com",
-  databaseURL: "https://eng4world-f78a2-default-rtdb.firebaseio.com",
-  projectId: "eng4world-f78a2",
-  storageBucket: "eng4world-f78a2.firebasestorage.app",
-  messagingSenderId: "914297244703",
-  appId: "1:914297244703:web:4f6530b891dfc06fb9192a"
-};
+            apiKey: "AIzaSyAKlo2eBKCQAeC3PkRz45ntdhYjH9YS3cE",
+            authDomain: "eng4world-f78a2.firebaseapp.com",
+            databaseURL: "https://eng4world-f78a2-default-rtdb.firebaseio.com",
+            projectId: "eng4world-f78a2",
+            storageBucket: "eng4world-f78a2.firebasestorage.app",
+            messagingSenderId: "914297244703",
+            appId: "1:914297244703:web:4f6530b891dfc06fb9192a"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const gProvider = new GoogleAuthProvider();
-        const iceServers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }], iceCandidatePoolSize: 10 };
+        const iceServers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
         let currentUser = null;
         let localStream = null;
         let activeRoomId = null;
-        let peers = {}; // Dictionary of targetId -> RTCPeerConnection
+        let peers = {};
         let authMode = 'login';
 
-        // --- AUTH LOGIC ---
+        // --- AUTH MODULE ---
         onAuthStateChanged(auth, (u) => {
             currentUser = u;
             if (u) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('user-section').classList.remove('hidden');
+                document.getElementById('auth-ui-guest').classList.add('hidden');
+                document.getElementById('auth-ui-user').classList.remove('hidden');
                 const pfp = u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${u.uid}`;
-                document.getElementById('nav-pfp').src = pfp;
-                document.getElementById('local-avatar-img').src = pfp;
+                document.getElementById('nav-user-img').src = pfp;
+                document.getElementById('local-img').src = pfp;
                 closeModals();
             } else {
-                document.getElementById('auth-section').classList.remove('hidden');
-                document.getElementById('user-section').classList.add('hidden');
+                document.getElementById('auth-ui-guest').classList.remove('hidden');
+                document.getElementById('auth-ui-user').classList.add('hidden');
             }
         });
 
-        window.toggleAuth = (mode) => {
+        window.openAuth = (mode) => {
             authMode = mode;
             document.getElementById('modal-auth').classList.remove('hidden');
             document.getElementById('auth-title').innerText = mode === 'login' ? 'Welcome Back' : 'Create Account';
             document.getElementById('auth-name').classList.toggle('hidden', mode === 'login');
+            document.getElementById('auth-toggle-text').innerText = mode === 'login' ? "Don't have an account? Sign Up" : "Have an account? Login";
         };
 
-        document.getElementById('auth-btn-main').onclick = async () => {
+        document.getElementById('auth-toggle-text').onclick = () => {
+            openAuth(authMode === 'login' ? 'signup' : 'login');
+        };
+
+        document.getElementById('auth-action-btn').onclick = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
+            const name = document.getElementById('auth-name').value;
             try {
-                if (authMode === 'login') await signInWithEmailAndPassword(auth, email, pass);
-                else {
+                if (authMode === 'login') {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
-                    await updateProfile(res.user, { displayName: document.getElementById('auth-name').value });
+                    await updateProfile(res.user, { displayName: name });
                     location.reload();
                 }
             } catch (e) { toast(e.message, 'error'); }
         };
 
-        document.getElementById('auth-btn-google').onclick = async () => {
+        document.getElementById('auth-google-btn').onclick = async () => {
             try { await signInWithPopup(auth, gProvider); } catch (e) { toast(e.message, 'error'); }
         };
 
-        window.logout = () => signOut(auth);
+        window.handleLogout = () => signOut(auth);
 
-        // --- ROOMS LISTING ---
+        // --- ROOM LISTING ---
         onSnapshot(collection(db, 'rooms'), (snap) => {
-            const list = document.getElementById('room-list');
-            list.innerHTML = '';
+            const container = document.getElementById('room-list-container');
+            container.innerHTML = '';
             snap.forEach(d => {
                 const data = d.data();
                 if (!data.participants || data.participants.length === 0) return;
-
                 const card = document.createElement('div');
                 card.className = "ds-card p-6";
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-6">
                         <img src="${data.creatorAvatar}" class="w-12 h-12 rounded-full border-2 border-blue-500">
-                        <span class="text-[10px] font-bold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full uppercase tracking-widest">${data.lang}</span>
+                        <span class="text-[10px] font-bold bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full uppercase">${data.lang}</span>
                     </div>
                     <h3 class="text-xl font-bold mb-2">${data.topic}</h3>
-                    <p class="text-slate-500 text-sm mb-6">${data.participants.length} / ${data.limit} People Joined</p>
-                    <button onclick="joinRoom('${d.id}')" class="mt-auto w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-blue-600 hover:text-white transition-all">Join Discussion</button>
+                    <p class="text-slate-500 text-sm mb-6">${data.participants.length} / ${data.limit} Joined</p>
+                    <button onclick="joinRoom('${d.id}')" class="mt-auto w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-blue-600 hover:text-white transition-all">Join Talk</button>
                 `;
-                list.appendChild(card);
+                container.appendChild(card);
             });
         });
 
-        // --- START/JOIN SESSION ---
-        document.getElementById('btn-create-start').onclick = () => {
-            if (!currentUser) return toggleAuth('login');
+        // --- ROOM CREATION & JOINING ---
+        document.getElementById('nav-create-btn').onclick = () => {
+            if (!currentUser) return openAuth('login');
             document.getElementById('modal-create').classList.remove('hidden');
         };
 
-        document.getElementById('room-confirm-btn').onclick = async () => {
-            const topic = document.getElementById('room-topic').value || "Language Practice";
-            const lang = document.getElementById('room-lang').value;
-            const limitVal = parseInt(document.getElementById('room-limit').value);
-
+        document.getElementById('confirm-create-btn').onclick = async () => {
+            const topic = document.getElementById('inp-room-topic').value || "Free Talk";
+            const lang = document.getElementById('inp-room-lang').value;
+            const limitVal = parseInt(document.getElementById('inp-room-limit').value);
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
-                localStream.getVideoTracks()[0].enabled = false; // Start muted
+                localStream.getVideoTracks()[0].enabled = false;
 
                 const roomRef = await addDoc(collection(db, 'rooms'), {
                     topic, lang, limit: limitVal,
@@ -269,18 +252,16 @@
                     createdAt: serverTimestamp()
                 });
                 activeRoomId = roomRef.id;
-                goLive(topic);
-            } catch (e) { toast("Mic/Cam Required to Start", "error"); }
+                startSession(topic);
+            } catch (e) { toast("Enable Camera/Mic to start", "error"); }
         };
 
         window.joinRoom = async (id) => {
-            if (!currentUser) return toggleAuth('login');
+            if (!currentUser) return openAuth('login');
             try {
                 const rRef = doc(db, 'rooms', id);
-                const rSnap = await getDoc(rRef);
-                const rData = rSnap.data();
-
-                if (rData.participants.length >= rData.limit) return toast("Room is full!", "error");
+                const snap = await getDoc(rRef);
+                if (snap.data().participants.length >= snap.data().limit) return toast("Room full", "error");
 
                 localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
@@ -288,35 +269,30 @@
 
                 activeRoomId = id;
                 await updateDoc(rRef, { participants: arrayUnion(currentUser.uid) });
-                goLive(rData.topic);
-            } catch (e) { toast("Connection failed", "error"); }
+                startSession(snap.data().topic);
+            } catch (e) { toast("Access Denied", "error"); }
         };
 
-        function goLive(topic) {
+        function startSession(topic) {
             closeModals();
             document.getElementById('call-screen').classList.remove('hidden');
-            document.getElementById('call-topic-name').innerText = topic;
+            document.getElementById('display-topic').innerText = topic;
             initWebRTC();
             initChat();
         }
 
-        // --- WEBRTC MESH LOGIC ---
+        // --- WEBRTC MESH ---
         function initWebRTC() {
-            // Watch for new participants
             onSnapshot(doc(db, 'rooms', activeRoomId), (snap) => {
                 const data = snap.data();
                 if (!data) return;
                 data.participants.forEach(pId => {
-                    // "Polite Peer" check: Lower UID offers to Higher UID
                     if (pId !== currentUser.uid && !peers[pId]) {
-                        if (currentUser.uid < pId) {
-                            setupPeer(pId, true); // I am the Offerer
-                        }
+                        if (currentUser.uid < pId) setupPeer(pId, true);
                     }
                 });
             });
 
-            // Listen for signals
             onSnapshot(collection(db, `rooms/${activeRoomId}/signals`), (snap) => {
                 snap.docChanges().forEach(async change => {
                     if (change.type === 'added') {
@@ -329,74 +305,56 @@
 
         async function setupPeer(targetId, isOfferer) {
             if (peers[targetId]) return;
-
             const pc = new RTCPeerConnection(iceServers);
             peers[targetId] = pc;
-
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
             pc.onicecandidate = (e) => {
-                if (e.candidate) {
-                    addDoc(collection(db, `rooms/${activeRoomId}/signals`), {
-                        type: 'ice', from: currentUser.uid, to: targetId, cand: e.candidate.toJSON()
-                    });
-                }
+                if (e.candidate) addDoc(collection(db, `rooms/${activeRoomId}/signals`), { type: 'ice', from: currentUser.uid, to: targetId, cand: e.candidate.toJSON() });
             };
 
             pc.ontrack = (e) => {
                 if (document.getElementById(`vid-${targetId}`)) return;
-
                 const box = document.createElement('div');
                 box.className = "video-box";
                 box.id = `box-${targetId}`;
-                box.innerHTML = `
-                    <video id="vid-${targetId}" autoplay playsinline></video>
-                    <div id="av-ui-${targetId}" class="avatar-overlay">
+                box.innerHTML = `<video id="vid-${targetId}" autoplay playsinline></video>
+                    <div id="av-${targetId}" class="avatar-overlay">
                         <img class="w-20 h-20 rounded-full mb-2" src="https://api.dicebear.com/7.x/adventurer/svg?seed=${targetId}">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase">Remote Learner</span>
-                    </div>
-                `;
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">Partner</span>
+                    </div>`;
                 document.getElementById('video-grid').appendChild(box);
                 document.getElementById(`vid-${targetId}`).srcObject = e.streams[0];
-                
-                // Track remote user camera state
-                const vTrack = e.streams[0].getVideoTracks()[0];
-                if(vTrack) {
-                    vTrack.onmute = () => document.getElementById(`av-ui-${targetId}`).classList.remove('hidden');
-                    vTrack.onunmute = () => document.getElementById(`av-ui-${targetId}`).classList.add('hidden');
+                const vt = e.streams[0].getVideoTracks()[0];
+                if(vt) {
+                    vt.onmute = () => document.getElementById(`av-${targetId}`).classList.remove('hidden');
+                    vt.onunmute = () => document.getElementById(`av-${targetId}`).classList.add('hidden');
                 }
             };
 
             if (isOfferer) {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                await addDoc(collection(db, `rooms/${activeRoomId}/signals`), {
-                    type: 'offer', from: currentUser.uid, to: targetId, sdp: offer.sdp
-                });
+                await addDoc(collection(db, `rooms/${activeRoomId}/signals`), { type: 'offer', from: currentUser.uid, to: targetId, sdp: offer.sdp });
             }
         }
 
         async function handleSignal(sig) {
             if (!peers[sig.from]) await setupPeer(sig.from, false);
             const pc = peers[sig.from];
-
-            try {
-                if (sig.type === 'offer') {
-                    await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: sig.sdp }));
-                    const ans = await pc.createAnswer();
-                    await pc.setLocalDescription(ans);
-                    await addDoc(collection(db, `rooms/${activeRoomId}/signals`), {
-                        type: 'answer', from: currentUser.uid, to: sig.from, sdp: ans.sdp
-                    });
-                } else if (sig.type === 'answer') {
-                    await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: sig.sdp }));
-                } else if (sig.type === 'ice') {
-                    await pc.addIceCandidate(new RTCIceCandidate(sig.cand));
-                }
-            } catch (err) { console.warn("RTC Signal Handle Error", err); }
+            if (sig.type === 'offer') {
+                await pc.setRemoteDescription(new RTCSessionDescription(sig));
+                const ans = await pc.createAnswer();
+                await pc.setLocalDescription(ans);
+                await addDoc(collection(db, `rooms/${activeRoomId}/signals`), { type: 'answer', from: currentUser.uid, to: sig.from, sdp: ans.sdp });
+            } else if (sig.type === 'answer') {
+                await pc.setRemoteDescription(new RTCSessionDescription(sig));
+            } else if (sig.type === 'ice') {
+                await pc.addIceCandidate(new RTCIceCandidate(sig.cand));
+            }
         }
 
-        // --- CHAT LOGIC ---
+        // --- CHAT MODULE ---
         function initChat() {
             const q = query(collection(db, `rooms/${activeRoomId}/chat`), orderBy('time', 'asc'));
             onSnapshot(q, (snap) => {
@@ -405,8 +363,8 @@
                 snap.forEach(m => {
                     const d = m.data();
                     const el = document.createElement('div');
-                    el.className = "p-3 bg-white/5 rounded-2xl border-l-2 border-blue-500";
-                    el.innerHTML = `<span class="block text-[10px] font-bold text-blue-400 uppercase mb-1">${d.name}</span><p class="text-sm">${d.text}</p>`;
+                    el.className = "p-3 bg-white/5 rounded-xl border-l-2 border-blue-500";
+                    el.innerHTML = `<span class="block text-[10px] text-blue-400 font-bold">${d.name}</span><p class="text-sm">${d.text}</p>`;
                     box.appendChild(el);
                 });
                 box.scrollTop = box.scrollHeight;
@@ -417,16 +375,12 @@
             e.preventDefault();
             const input = document.getElementById('chat-input');
             if (!input.value.trim()) return;
-            await addDoc(collection(db, `rooms/${activeRoomId}/chat`), {
-                name: currentUser.displayName || "Learner",
-                text: input.value,
-                time: serverTimestamp()
-            });
+            await addDoc(collection(db, `rooms/${activeRoomId}/chat`), { name: currentUser.displayName || "User", text: input.value, time: serverTimestamp() });
             input.value = '';
         };
 
-        // --- UTILS & CONTROLS ---
-        window.endSession = async () => {
+        // --- UI UTILS ---
+        window.leaveRoom = async () => {
             if (activeRoomId && currentUser) {
                 await updateDoc(doc(db, 'rooms', activeRoomId), { participants: arrayRemove(currentUser.uid) });
             }
@@ -436,25 +390,24 @@
         window.closeModals = () => document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
 
         function toast(msg, type) {
-            const bin = document.getElementById('toast-bin');
             const el = document.createElement('div');
             el.className = `toast ${type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`;
             el.innerText = msg;
-            bin.appendChild(el);
+            document.getElementById('toast-bin').appendChild(el);
             setTimeout(() => el.remove(), 3000);
         }
 
-        document.getElementById('mic-btn').onclick = function() {
+        document.getElementById('toggle-mic').onclick = function() {
             const state = localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled;
             this.classList.toggle('bg-red-600', !state);
-            this.classList.toggle('bg-blue-600', state);
+            this.innerText = state ? 'Mic' : 'Muted';
         };
 
-        document.getElementById('cam-btn').onclick = function() {
+        document.getElementById('toggle-cam').onclick = function() {
             const state = localStream.getVideoTracks()[0].enabled = !localStream.getVideoTracks()[0].enabled;
-            document.getElementById('local-avatar-ui').classList.toggle('hidden', state);
+            document.getElementById('local-avatar').classList.toggle('hidden', state);
             this.classList.toggle('bg-blue-600', state);
-            this.classList.toggle('bg-slate-800', !state);
+            this.innerText = state ? 'Cam On' : 'Cam Off';
         };
     </script>
 </body>
