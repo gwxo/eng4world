@@ -3,279 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eng4world | Practice English with the World</title>
-    
-    <!-- Tailwind CSS -->
+    <title>eng4world | Practice English</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --primary: #3b82f6;
-            --bg-dark: #020617;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --bg-main: #0f172a;
+            --bg-sidebar: #0b1224;
+            --glass: rgba(30, 41, 59, 0.7);
+            --accent: #3b82f6;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-main);
             color: white;
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+            margin: 0;
+            overflow-x: hidden;
         }
 
-        .glass {
+        /* Free4Talk Pattern Background */
+        .room-pattern {
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .view-section { display: none; min-height: 100vh; }
+        .view-section.active { display: flex; flex-direction: column; }
+
+        .glass-panel {
             background: var(--glass);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.2);
-        }
-
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-
-        #video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .video-wrapper {
-            position: relative;
-            aspect-ratio: 16/9;
-            background: #0f172a;
-            border-radius: 1.25rem;
+        /* Video/Avatar Styling */
+        .user-tile {
+            width: 140px;
+            height: 140px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 2px solid transparent;
+            position: relative;
+            background: #1e293b;
+            border: 2px solid #334155;
+            transition: all 0.3s;
+        }
+        .user-tile.speaking { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+        .user-tile video { width: 100%; height: 100%; object-fit: cover; }
+        .user-label {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.6); font-size: 10px; padding: 2px 6px;
         }
 
-        .video-wrapper.active-speaker { border-color: var(--primary); }
-
-        video { width: 100%; height: 100%; object-fit: cover; }
-
-        .btn-neon {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-            transition: 0.3s;
-        }
-        .btn-neon:hover {
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+        /* Floating Controls */
+        .floating-controls {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 100; display: flex; gap: 10px; padding: 8px;
+            border-radius: 12px; background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        input::placeholder { color: #64748b; }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .bottom-bar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 100; display: flex; gap: 15px; padding: 10px 20px;
+            border-radius: 50px; background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar {
+            width: 350px; background: var(--bg-sidebar);
+            border-left: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .sidebar.mobile-open { display: flex; position: fixed; right: 0; top: 0; bottom: 0; z-index: 200; width: 85%; }
+        }
+
+        .btn-circle {
+            width: 45px; height: 45px; border-radius: 10px;
+            display: flex; items-center; justify-content: center;
+            background: #1e293b; transition: 0.2s;
+        }
+        .btn-circle:hover { background: #334155; }
+        .btn-danger { background: #ef4444 !important; }
+        .btn-danger:hover { background: #dc2626 !important; }
+
+        input::placeholder { color: #475569; }
     </style>
 </head>
-<body>
+<body class="room-pattern">
 
-    <!-- NAV BAR -->
-    <nav class="fixed top-0 w-full z-50 glass py-4 px-6">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <a href="#/home" class="text-2xl font-black tracking-tighter text-blue-500">eng4world</a>
-            
-            <div id="nav-auth-buttons" class="flex gap-3">
-                <a href="#/login" class="px-5 py-2 text-sm font-semibold hover:text-blue-400 transition">Sign In</a>
-                <a href="#/signup" class="px-5 py-2 text-sm font-semibold bg-blue-600 rounded-full btn-neon">Get Started</a>
-            </div>
-
-            <div id="nav-user-profile" class="hidden flex items-center gap-4">
-                <button onclick="openCreateModal()" class="hidden md:block bg-white/5 border border-white/10 px-4 py-2 rounded-full text-sm font-medium hover:bg-white/10 transition">
-                    <i class="fas fa-plus mr-2"></i> Create Room
-                </button>
-                <div class="relative group">
-                    <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-blue-500 cursor-pointer">
-                    <div class="absolute right-0 mt-2 w-48 glass rounded-xl hidden group-hover:block p-2 shadow-2xl border border-white/10">
-                        <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-400 hover:bg-red-500/10 rounded-lg text-sm transition">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <!-- NAVIGATION (Home Only) -->
+    <nav id="app-nav" class="fixed top-0 w-full z-50 glass-panel py-4 px-6 flex justify-between items-center">
+        <h1 class="text-2xl font-black text-blue-500">eng4world</h1>
+        <div id="nav-actions" class="flex gap-4">
+            <!-- Dynamic Content -->
         </div>
     </nav>
 
-    <!-- CREATE ROOM MODAL -->
-    <div id="modal-container" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-        <div class="glass-card w-full max-w-md p-8 rounded-3xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold">Launch Room</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+    <!-- LANDING / HOME VIEW -->
+    <section id="view-home" class="view-section pt-24 px-6 active">
+        <div class="max-w-6xl mx-auto w-full">
+            <div id="hero-section" class="py-12 text-center">
+                <h2 class="text-5xl font-black mb-4">Practice English with <br><span class="text-blue-500">Global Peers</span></h2>
+                <p class="text-gray-400 max-w-xl mx-auto mb-8">Real-time voice and video rooms for language learners.</p>
+                <div id="home-auth-btns" class="flex justify-center gap-4">
+                    <a href="#/login" class="bg-blue-600 px-8 py-3 rounded-full font-bold">Sign In</a>
+                    <a href="#/signup" class="bg-white/10 px-8 py-3 rounded-full font-bold border border-white/10">Create Account</a>
+                </div>
             </div>
-            <form id="create-room-form" class="space-y-5">
-                <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Topic</label>
-                    <input type="text" id="room-title" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 mt-1 focus:outline-none focus:border-blue-500" placeholder="e.g. Daily Conversation Practice">
+
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Active Groups</h3>
+                <button onclick="openCreateModal()" id="btn-create-room" class="hidden bg-blue-600 px-4 py-2 rounded-lg text-sm font-bold">
+                    <i class="fas fa-plus mr-2"></i> Create Room
+                </button>
+            </div>
+            
+            <div id="rooms-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+                <!-- Rooms populate here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- AUTH VIEWS -->
+    <section id="view-login" class="view-section items-center justify-center">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md">
+            <h2 class="text-3xl font-black mb-6 text-center">Sign In</h2>
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500" required>
+                <input type="password" id="login-password" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:border-blue-500" required>
+                <button class="w-full bg-blue-600 py-4 rounded-xl font-bold">Login</button>
+            </form>
+            <p class="mt-4 text-center text-gray-400 text-sm">Need an account? <a href="#/signup" class="text-blue-500">Sign Up</a></p>
+        </div>
+    </section>
+
+    <section id="view-signup" class="view-section items-center justify-center">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md">
+            <h2 class="text-3xl font-black mb-6 text-center">Join Us</h2>
+            <form id="signup-form" class="space-y-4">
+                <input type="text" id="signup-name" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none" required>
+                <input type="email" id="signup-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none" required>
+                <input type="password" id="signup-password" placeholder="Password (6+ chars)" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none" required>
+                <button class="w-full bg-blue-600 py-4 rounded-xl font-bold">Create Account</button>
+            </form>
+            <p class="mt-4 text-center text-gray-400 text-sm">Have an account? <a href="#/login" class="text-blue-500">Log In</a></p>
+        </div>
+    </section>
+
+    <!-- ROOM VIEW (Exact Screenshot Layout) -->
+    <section id="view-room" class="view-section fixed inset-0 z-[60] bg-[#020617] !flex-row overflow-hidden">
+        
+        <!-- Main Stage -->
+        <div class="flex-1 relative flex flex-col items-center justify-center p-4">
+            
+            <!-- Top Control Bar -->
+            <div class="floating-controls shadow-2xl">
+                <button id="room-mic" onclick="toggleMic()" class="btn-circle text-gray-300"><i class="fas fa-microphone-slash"></i></button>
+                <button id="room-cam" onclick="toggleCam()" class="btn-circle text-gray-300"><i class="fas fa-video-slash"></i></button>
+                <button class="btn-circle text-gray-300"><i class="fas fa-signal"></i></button>
+                <button onclick="leaveRoom()" class="btn-circle btn-danger text-white"><i class="fas fa-phone-slash"></i></button>
+            </div>
+
+            <!-- Empty Middle (Pattern Background visible here) -->
+            <div class="flex-1 w-full flex items-center justify-center opacity-20">
+                <i class="fas fa-globe-americas text-[200px]"></i>
+            </div>
+
+            <!-- User Tiles Bottom -->
+            <div id="video-grid" class="w-full flex flex-wrap justify-center gap-4 mb-20">
+                <!-- Local User -->
+                <div class="user-tile" id="local-tile">
+                    <video id="local-video" autoplay playsinline muted></video>
+                    <div class="user-label">You (Owner)</div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Category</label>
-                        <select id="room-category" class="w-full bg-slate-900 border border-white/10 rounded-xl p-4 mt-1 focus:outline-none">
-                            <option>General</option>
-                            <option>IELTS</option>
-                            <option>Business</option>
-                            <option>Beginners</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Capacity</label>
-                        <select id="room-max" class="w-full bg-slate-900 border border-white/10 rounded-xl p-4 mt-1 focus:outline-none">
-                            <option value="2">2 People</option>
-                            <option value="4" selected>4 People</option>
-                            <option value="6">6 People</option>
-                            <option value="10">10 People</option>
-                        </select>
-                    </div>
+            </div>
+
+            <!-- Small Bottom Toolstrip -->
+            <div class="bottom-bar">
+                <button class="text-yellow-500 text-lg"><i class="fas fa-hand-paper"></i></button>
+                <button class="text-blue-400 text-lg"><i class="fas fa-palette"></i></button>
+                <button class="text-gray-400 text-lg"><i class="fas fa-ellipsis-h"></i></button>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="flex border-b border-white/5">
+                <button class="flex-1 p-4 text-blue-500 border-b-2 border-blue-500"><i class="fas fa-comment"></i></button>
+                <button class="flex-1 p-4 text-gray-500"><i class="fas fa-share-alt"></i></button>
+                <button class="flex-1 p-4 text-gray-500"><i class="fas fa-th-large"></i></button>
+                <button class="flex-1 p-4 text-gray-500"><i class="fas fa-cog"></i></button>
+                <button class="flex-1 p-4 text-gray-500"><i class="fas fa-expand"></i></button>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col">
+                <div class="bg-blue-900/20 p-3 rounded-lg border border-blue-500/20 mb-4">
+                    <h4 class="text-sm font-bold text-blue-400">Room Info</h4>
+                    <p class="text-xs text-gray-400">Language: English</p>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold text-lg btn-neon hover:bg-blue-500 transition-all">Start Now</button>
+
+                <!-- Status Notifications (as seen in screenshot) -->
+                <div id="room-logs" class="space-y-2 mb-4">
+                    <p class="text-red-500/80 text-[11px]">Microphone is disabled</p>
+                    <p class="text-red-500/80 text-[11px]">Camera is disabled</p>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chat-box" class="flex-1 overflow-y-auto custom-scrollbar text-sm space-y-3 mb-4"></div>
+
+                <!-- Chat Input -->
+                <div class="relative mt-auto">
+                    <div class="flex gap-2 mb-2">
+                        <i class="far fa-smile text-gray-500"></i>
+                        <i class="far fa-image text-gray-500"></i>
+                        <i class="fas fa-robot text-gray-500"></i>
+                    </div>
+                    <form id="chat-form" class="flex items-center gap-2 bg-white/5 rounded-xl p-2 border border-white/10">
+                        <textarea id="chat-input" rows="2" placeholder="Type a message..." class="flex-1 bg-transparent border-none focus:outline-none text-sm resize-none"></textarea>
+                        <button class="text-blue-500 px-2"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <!-- CREATE ROOM MODAL -->
+    <div id="create-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="glass-panel p-8 rounded-2xl w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">New Practice Session</h3>
+            <form id="create-room-form" class="space-y-4">
+                <input type="text" id="room-title-in" placeholder="Room Topic (e.g. IELTS Prep)" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg focus:outline-none" required>
+                <select id="room-cat-in" class="w-full bg-slate-900 border border-white/10 p-3 rounded-lg focus:outline-none">
+                    <option>English (General)</option>
+                    <option>Business English</option>
+                    <option>IELTS/TOEFL</option>
+                </select>
+                <div class="flex gap-4">
+                    <button type="button" onclick="closeCreateModal()" class="flex-1 py-3 border border-white/10 rounded-lg">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 bg-blue-600 rounded-lg font-bold">Launch</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- VIEW: HOME / LANDING -->
-    <section id="view-home" class="view-section pt-32 px-6">
-        <div class="max-w-7xl mx-auto">
-            <!-- Hero (Only for guests) -->
-            <div id="hero-guest" class="text-center mb-20">
-                <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">Practice English with <br><span class="text-blue-500">people around the world.</span></h1>
-                <p class="text-gray-400 text-xl max-w-2xl mx-auto mb-10">Join live voice and video rooms. No complex setup. Just speak and improve your fluency instantly.</p>
-                <div class="flex flex-col md:flex-row justify-center gap-4">
-                    <a href="#/signup" class="px-10 py-4 bg-blue-600 rounded-full font-bold text-lg btn-neon">Join the Community</a>
-                    <a href="#/login" class="px-10 py-4 glass rounded-full font-bold text-lg hover:bg-white/5">Sign In to Your Account</a>
-                </div>
-            </div>
-
-            <!-- Rooms Section -->
-            <div id="rooms-header" class="flex justify-between items-end mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold">Active Rooms</h2>
-                    <p class="text-gray-500">Jump into a conversation</p>
-                </div>
-                <div class="flex gap-2" id="filter-chips">
-                    <button class="px-4 py-2 rounded-full glass border-blue-500 text-blue-500 text-sm font-medium">All</button>
-                    <button class="px-4 py-2 rounded-full glass text-sm font-medium hover:bg-white/5">IELTS</button>
-                </div>
-            </div>
-
-            <div id="rooms-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-                <!-- Room Cards will load here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- VIEW: SIGN IN -->
-    <section id="view-login" class="view-section pt-40 px-6">
-        <div class="max-w-md mx-auto glass-card p-10 rounded-3xl">
-            <h2 class="text-3xl font-black mb-2 text-center">Welcome Back</h2>
-            <p class="text-gray-400 text-center mb-8">Login to start practicing</p>
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="Email Address" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-blue-500 transition">
-                <input type="password" id="login-password" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-blue-500 transition">
-                <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold btn-neon transition">Sign In</button>
-            </form>
-            <div class="mt-8 text-center">
-                <p class="text-gray-500">Don't have an account? <a href="#/signup" class="text-blue-500 font-bold">Sign Up</a></p>
-            </div>
-        </div>
-    </section>
-
-    <!-- VIEW: SIGN UP -->
-    <section id="view-signup" class="view-section pt-40 px-6">
-        <div class="max-w-md mx-auto glass-card p-10 rounded-3xl">
-            <h2 class="text-3xl font-black mb-2 text-center">Create Account</h2>
-            <p class="text-gray-400 text-center mb-8">Join the global community</p>
-            <form id="signup-form" class="space-y-4">
-                <input type="text" id="signup-name" placeholder="Display Name" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-blue-500 transition">
-                <input type="email" id="signup-email" placeholder="Email Address" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-blue-500 transition">
-                <input type="password" id="signup-password" placeholder="Password (6+ chars)" required class="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-blue-500 transition">
-                <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold btn-neon transition">Join Now</button>
-            </form>
-            <div class="mt-8 text-center">
-                <p class="text-gray-500">Already a member? <a href="#/login" class="text-blue-500 font-bold">Sign In</a></p>
-            </div>
-        </div>
-    </section>
-
-    <!-- VIEW: ROOM -->
-    <section id="view-room" class="view-section fixed inset-0 z-[60] bg-[#020617] overflow-hidden">
-        <div class="flex flex-col h-full">
-            <!-- Room Header -->
-            <div class="glass py-3 px-6 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <button onclick="leaveRoom()" class="text-gray-400 hover:text-white"><i class="fas fa-chevron-left"></i></button>
-                    <div>
-                        <h2 id="active-room-title" class="font-bold text-lg">Room Title</h2>
-                        <span id="active-room-category" class="text-[10px] uppercase tracking-widest text-blue-500 font-bold">IELTS</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="copyInvite()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-medium transition">
-                        <i class="fas fa-link mr-2 text-blue-500"></i> Invite
-                    </button>
-                    <button onclick="leaveRoom()" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition">Leave</button>
-                </div>
-            </div>
-
-            <!-- Content -->
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Video Area -->
-                <div class="flex-1 p-6 overflow-y-auto custom-scrollbar">
-                    <div id="video-grid">
-                        <div class="video-wrapper" id="local-video-container">
-                            <video id="local-video" autoplay playsinline muted></video>
-                            <div class="absolute bottom-4 left-4 glass px-3 py-1.5 rounded-full text-xs font-bold">You</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Panel -->
-                <div class="hidden lg:flex w-96 glass border-l border-white/10 flex-col">
-                    <div class="p-4 border-b border-white/10 font-bold">Live Chat</div>
-                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"></div>
-                    <div class="p-4 bg-black/20">
-                        <form id="chat-form" class="flex gap-2">
-                            <input type="text" id="chat-input" placeholder="Say something..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                            <button type="submit" class="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-white"><i class="fas fa-paper-plane"></i></button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="p-6 flex justify-center items-center gap-4 bg-gradient-to-t from-black to-transparent">
-                <button id="btn-mic" onclick="toggleMic()" class="w-16 h-16 rounded-full glass flex items-center justify-center text-xl hover:bg-blue-600 transition"><i class="fas fa-microphone"></i></button>
-                <button id="btn-cam" onclick="toggleCam()" class="w-16 h-16 rounded-full glass flex items-center justify-center text-xl hover:bg-blue-600 transition"><i class="fas fa-video"></i></button>
-                <button id="btn-screen" onclick="toggleScreen()" class="w-16 h-16 rounded-full glass flex items-center justify-center text-xl hover:bg-blue-600 transition"><i class="fas fa-desktop"></i></button>
-            </div>
-        </div>
-    </section>
-
-    <!-- FIREBASE SDKS -->
+    <!-- FIREBASE & LOGIC -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
-        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAKlo2eBKCQAeC3PkRz45ntdhYjH9YS3cE",
             authDomain: "eng4world-f78a2.firebaseapp.com",
@@ -293,22 +276,19 @@
 
         let currentUser = null;
         let localStream = null;
-        let currentRoomId = null;
         let peers = {};
+        let activeRoomId = null;
 
-        // 1. ROUTER
+        // --- ROUTER ---
         function router() {
             const hash = window.location.hash || '#/home';
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('app-nav').style.display = hash.startsWith('#/room/') ? 'none' : 'flex';
 
             if (hash.startsWith('#/room/')) {
-                const roomId = hash.split('/')[2];
-                if (!auth.currentUser) {
-                    window.location.hash = '#/login';
-                } else {
-                    document.getElementById('view-room').classList.add('active');
-                    joinRoom(roomId);
-                }
+                const id = hash.split('/')[2];
+                document.getElementById('view-room').classList.add('active');
+                initRoom(id);
             } else if (hash === '#/login') {
                 document.getElementById('view-login').classList.add('active');
             } else if (hash === '#/signup') {
@@ -320,22 +300,28 @@
         }
 
         window.addEventListener('hashchange', router);
+
         auth.onAuthStateChanged(user => {
             currentUser = user;
+            const nav = document.getElementById('nav-actions');
+            const guestBtns = document.getElementById('home-auth-btns');
+            
             if (user) {
-                document.getElementById('nav-auth-buttons').classList.add('hidden');
-                document.getElementById('nav-user-profile').classList.remove('hidden');
-                document.getElementById('hero-guest').classList.add('hidden');
-                document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${user.displayName}&background=random`;
+                nav.innerHTML = `
+                    <span class="text-sm text-gray-400 self-center mr-2">Hello, ${user.displayName}</span>
+                    <button onclick="logout()" class="text-sm font-bold text-red-500">Logout</button>
+                `;
+                if(guestBtns) guestBtns.classList.add('hidden');
+                document.getElementById('btn-create-room').classList.remove('hidden');
             } else {
-                document.getElementById('nav-auth-buttons').classList.remove('hidden');
-                document.getElementById('nav-user-profile').classList.add('hidden');
-                document.getElementById('hero-guest').classList.remove('hidden');
+                nav.innerHTML = `<a href="#/login" class="text-sm font-bold">Login</a>`;
+                if(guestBtns) guestBtns.classList.remove('hidden');
+                document.getElementById('btn-create-room').classList.add('hidden');
             }
             router();
         });
 
-        // 2. AUTH LOGIC
+        // --- AUTH ---
         document.getElementById('signup-form').onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('signup-name').value;
@@ -358,44 +344,38 @@
             } catch (err) { alert(err.message); }
         };
 
-        function logout() { auth.signOut(); window.location.hash = '#/home'; }
+        function logout() { auth.signOut(); window.location.hash = '#/login'; }
 
-        // 3. ROOM MANAGEMENT
-        function openCreateModal() { document.getElementById('modal-container').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal-container').classList.add('hidden'); }
+        // --- ROOMS ---
+        function openCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); }
+        function closeCreateModal() { document.getElementById('create-modal').classList.add('hidden'); }
 
         document.getElementById('create-room-form').onsubmit = async (e) => {
             e.preventDefault();
-            const room = {
-                title: document.getElementById('room-title').value,
-                category: document.getElementById('room-category').value,
-                maxUsers: parseInt(document.getElementById('room-max').value),
-                hostId: currentUser.uid,
-                hostName: currentUser.displayName,
-                activeUsers: 1,
+            const title = document.getElementById('room-title-in').value;
+            const cat = document.getElementById('room-cat-in').value;
+            const doc = await db.collection('rooms').add({
+                title, category: cat, host: currentUser.displayName, 
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            const doc = await db.collection('rooms').add(room);
-            closeModal();
+            });
+            closeCreateModal();
             window.location.hash = `#/room/${doc.id}`;
         };
 
         function loadRooms() {
-            const list = document.getElementById('rooms-list');
-            db.collection('rooms').orderBy('createdAt', 'desc').limit(20).onSnapshot(snap => {
+            db.collection('rooms').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                const list = document.getElementById('rooms-list');
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const r = doc.data();
                     list.innerHTML += `
-                        <div onclick="window.location.hash='#/room/${doc.id}'" class="glass-card p-6 rounded-3xl cursor-pointer group">
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">${r.category}</span>
-                                <div class="text-xs text-gray-500 font-bold"><i class="fas fa-users mr-1"></i> ${r.activeUsers || 1}/${r.maxUsers}</div>
+                        <div onclick="window.location.hash='#/room/${doc.id}'" class="glass-panel p-6 rounded-2xl cursor-pointer hover:border-blue-500 transition">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="text-[10px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded font-bold uppercase">${r.category}</span>
                             </div>
-                            <h3 class="text-xl font-bold mb-4 group-hover:text-blue-500 transition">${r.title}</h3>
-                            <div class="flex items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name=${r.hostName}&background=random" class="w-8 h-8 rounded-full">
-                                <span class="text-sm text-gray-400 font-medium">by ${r.hostName}</span>
+                            <h4 class="font-bold text-lg mb-4">${r.title}</h4>
+                            <div class="flex items-center gap-2 text-sm text-gray-500">
+                                <i class="fas fa-user-circle"></i> ${r.host}
                             </div>
                         </div>
                     `;
@@ -403,68 +383,67 @@
             });
         }
 
-        // 4. WEBRTC & REALTIME ROOM
-        async function joinRoom(roomId) {
-            currentRoomId = roomId;
-            const doc = await db.collection('rooms').doc(roomId).get();
-            if(!doc.exists) return;
-            
-            document.getElementById('active-room-title').innerText = doc.data().title;
-            document.getElementById('active-room-category').innerText = doc.data().category;
+        // --- WEBRTC CORE ---
+        async function initRoom(id) {
+            activeRoomId = id;
+            if (!localStream) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    document.getElementById('local-video').srcObject = localStream;
+                } catch (e) { console.error("Media access denied"); }
+            }
 
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('local-video').srcObject = localStream;
+            // Signal presence
+            const pRef = rtdb.ref(`presence/${id}/${currentUser.uid}`);
+            pRef.set({ name: currentUser.displayName });
+            pRef.onDisconnect().remove();
 
-            const roomRef = rtdb.ref(`signaling/${roomId}`);
-            roomRef.child(currentUser.uid).set({ name: currentUser.displayName });
-            roomRef.child(currentUser.uid).onDisconnect().remove();
-
-            roomRef.on('child_added', snap => {
-                if (snap.key !== currentUser.uid) initiateConnection(snap.key, true);
+            // Listen for others
+            rtdb.ref(`presence/${id}`).on('child_added', snap => {
+                if (snap.key !== currentUser.uid) connectToPeer(snap.key, true);
             });
 
-            rtdb.ref(`signals/${roomId}/${currentUser.uid}`).on('child_added', async snap => {
+            rtdb.ref(`signals/${id}/${currentUser.uid}`).on('child_added', async snap => {
                 const data = snap.val();
-                if (!peers[data.from]) initiateConnection(data.from, false);
+                if (!peers[data.from]) connectToPeer(data.from, false);
                 const pc = peers[data.from];
 
                 if (data.type === 'offer') {
                     await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                    const answer = await pc.createAnswer();
-                    await pc.setLocalDescription(answer);
-                    sendSignal(data.from, { type: 'answer', answer });
+                    const ans = await pc.createAnswer();
+                    await pc.setLocalDescription(ans);
+                    sendSignal(data.from, { type: 'answer', answer: ans });
                 } else if (data.type === 'answer') {
                     await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                } else if (data.type === 'candidate') {
-                    await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } else if (data.type === 'ice') {
+                    await pc.addIceCandidate(new RTCIceCandidate(data.ice));
                 }
                 snap.ref.remove();
             });
 
-            initChat(roomId);
+            initChat(id);
         }
 
-        function initiateConnection(remoteUid, isOffer) {
-            if (peers[remoteUid]) return;
+        function connectToPeer(uid, isOffer) {
+            if (peers[uid]) return;
             const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-            peers[remoteUid] = pc;
+            peers[uid] = pc;
 
             localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
             pc.onicecandidate = e => {
-                if(e.candidate) sendSignal(remoteUid, { type: 'candidate', candidate: e.candidate });
+                if (e.candidate) sendSignal(uid, { type: 'ice', ice: e.candidate });
             };
 
             pc.ontrack = e => {
-                let video = document.getElementById(`video-${remoteUid}`);
+                let video = document.getElementById(`vid-${uid}`);
                 if (!video) {
-                    const cont = document.createElement('div');
-                    cont.className = 'video-wrapper';
-                    cont.id = `cont-${remoteUid}`;
-                    cont.innerHTML = `<video id="video-${remoteUid}" autoplay playsinline></video>
-                                     <div class="absolute bottom-4 left-4 glass px-3 py-1.5 rounded-full text-xs font-bold">Participant</div>`;
-                    document.getElementById('video-grid').appendChild(cont);
-                    video = document.getElementById(`video-${remoteUid}`);
+                    const tile = document.createElement('div');
+                    tile.className = 'user-tile';
+                    tile.id = `tile-${uid}`;
+                    tile.innerHTML = `<video id="vid-${uid}" autoplay playsinline></video><div class="user-label">Participant</div>`;
+                    document.getElementById('video-grid').appendChild(tile);
+                    video = document.getElementById(`vid-${uid}`);
                 }
                 video.srcObject = e.streams[0];
             };
@@ -473,70 +452,57 @@
                 pc.onnegotiationneeded = async () => {
                     const offer = await pc.createOffer();
                     await pc.setLocalDescription(offer);
-                    sendSignal(remoteUid, { type: 'offer', offer });
+                    sendSignal(uid, { type: 'offer', offer });
                 };
             }
         }
 
         function sendSignal(to, data) {
-            rtdb.ref(`signals/${currentRoomId}/${to}`).push({ ...data, from: currentUser.uid });
+            rtdb.ref(`signals/${activeRoomId}/${to}`).push({ ...data, from: currentUser.uid });
         }
 
-        // 5. CHAT
-        function initChat(roomId) {
-            const chatBox = document.getElementById('chat-messages');
-            db.collection('rooms').doc(roomId).collection('chats').orderBy('time', 'asc').onSnapshot(snap => {
-                chatBox.innerHTML = '';
+        // --- CHAT ---
+        function initChat(id) {
+            const box = document.getElementById('chat-box');
+            db.collection('rooms').doc(id).collection('chats').orderBy('time', 'asc').onSnapshot(snap => {
+                box.innerHTML = '';
                 snap.forEach(m => {
                     const d = m.data();
-                    const isMe = d.uid === currentUser.uid;
-                    chatBox.innerHTML += `
-                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-                            <span class="text-[10px] text-gray-500 mb-1 ml-1">${d.name}</span>
-                            <div class="${isMe ? 'bg-blue-600' : 'bg-white/5'} px-4 py-2 rounded-2xl text-sm max-w-[85%] border border-white/5">
-                                ${d.text}
-                            </div>
-                        </div>
-                    `;
+                    box.innerHTML += `<div><span class="font-bold text-blue-400">${d.name}:</span> <span class="text-gray-300">${d.text}</span></div>`;
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
+                box.scrollTop = box.scrollHeight;
             });
 
             document.getElementById('chat-form').onsubmit = async (e) => {
                 e.preventDefault();
-                const input = document.getElementById('chat-input');
-                if(!input.value) return;
-                await db.collection('rooms').doc(roomId).collection('chats').add({
-                    uid: currentUser.uid,
-                    name: currentUser.displayName,
-                    text: input.value,
-                    time: firebase.firestore.FieldValue.serverTimestamp()
+                const el = document.getElementById('chat-input');
+                if(!el.value) return;
+                await db.collection('rooms').doc(id).collection('chats').add({
+                    name: currentUser.displayName, text: el.value, time: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                input.value = '';
+                el.value = '';
             };
         }
 
-        // 6. UI CONTROLS
-        function leaveRoom() {
-            location.reload(); // Simplest way to clear all WebRTC states
-        }
-
+        // --- UI CONTROLS ---
         function toggleMic() {
             const track = localStream.getAudioTracks()[0];
             track.enabled = !track.enabled;
-            document.getElementById('btn-mic').classList.toggle('bg-red-500', !track.enabled);
+            document.getElementById('room-mic').innerHTML = track.enabled ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+            document.getElementById('room-mic').classList.toggle('text-blue-500', track.enabled);
         }
 
         function toggleCam() {
             const track = localStream.getVideoTracks()[0];
             track.enabled = !track.enabled;
-            document.getElementById('btn-cam').classList.toggle('bg-red-500', !track.enabled);
+            document.getElementById('room-cam').innerHTML = track.enabled ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
+            document.getElementById('room-cam').classList.toggle('text-blue-500', track.enabled);
         }
 
-        function copyInvite() {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Invite link copied to clipboard!");
+        function leaveRoom() {
+            location.reload();
         }
+
     </script>
 </body>
 </html>
