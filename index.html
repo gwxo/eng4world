@@ -3,190 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eng4world | Speak English with the World</title>
+    <title>eng4world | Live English Practice</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        :root { --bg: #030712; --glass: rgba(17, 24, 39, 0.7); --accent: #3b82f6; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: white; margin: 0; overflow-x: hidden; }
-        .room-pattern { background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 30px 30px; }
-        .view-section { display: none; min-height: 100vh; width: 100vw; flex-direction: column; }
-        .view-section.active { display: flex; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        :root { --bg: #020617; --primary: #3b82f6; --glass: rgba(255, 255, 255, 0.03); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: white; overflow-x: hidden; }
+        .room-bg { background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 24px 24px; }
+        .view { display: none; min-height: 100vh; flex-direction: column; }
+        .view.active { display: flex; }
+        .glass { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         
-        /* Video Grid Styling */
-        .user-tile { width: 150px; height: 150px; border-radius: 20px; overflow: hidden; position: relative; background: #111827; border: 2px solid #1f2937; transition: 0.3s; }
-        .user-tile.speaking { border-color: var(--accent); box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-        .user-tile video, .user-tile img { width: 100%; height: 100%; object-fit: cover; }
-        .user-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); font-size: 11px; padding: 5px; display: flex; justify-content: space-between; }
+        /* Video Call UI */
+        .video-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; padding-bottom: 100px; }
+        .user-card { width: 160px; height: 160px; border-radius: 20px; overflow: hidden; position: relative; background: #0f172a; border: 2px solid #1e293b; transition: 0.3s ease; }
+        .user-card.active-speaker { border-color: var(--primary); box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-placeholder { width: 100%; height: 100%; object-fit: cover; background: #1e293b; }
+        .label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); padding: 5px 10px; font-size: 11px; display: flex; justify-content: space-between; }
+        
+        /* Controls */
+        .ctrl-bar { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 12px; background: rgba(15, 23, 42, 0.95); padding: 10px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .icon-btn { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: #1e293b; color: #94a3b8; font-size: 18px; cursor: pointer; transition: 0.2s; }
+        .icon-btn.on { background: var(--primary); color: white; }
+        .icon-btn.exit { background: #ef4444; color: white; }
+        .icon-btn:hover { transform: scale(1.05); }
 
-        /* Navigation */
-        header { position: fixed; top: 0; width: 100%; z-index: 100; transition: 0.3s; }
-        .nav-btn { padding: 8px 20px; border-radius: 50px; font-weight: 700; font-size: 14px; transition: 0.2s; }
-
-        /* Hero Image */
-        .hero-img { filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3)); animation: float 6s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-
-        /* Room Overlay */
-        #room-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-
-        .sidebar { width: 350px; background: #080c14; border-left: 1px solid #1f2937; transition: 0.3s; }
-        @media (max-width: 1024px) { .sidebar { position: fixed; right: 0; top: 0; bottom: 0; transform: translateX(100%); z-index: 150; } .sidebar.open { transform: translateX(0); } }
+        .chat-sidebar { width: 360px; background: #010409; border-left: 1px solid #1e293b; display: flex; flex-direction: column; }
+        @media (max-width: 1024px) { .chat-sidebar { display: none; } }
     </style>
 </head>
-<body class="room-pattern">
-
-    <!-- GLOBAL OVERLAY (For Terminated Rooms) -->
-    <div id="room-overlay">
-        <div class="bg-red-500/10 p-10 rounded-3xl border border-red-500/20">
-            <i class="fas fa-exclamation-triangle text-6xl text-red-500 mb-6"></i>
-            <h2 class="text-3xl font-black mb-2">Group Terminated</h2>
-            <p class="text-gray-400 mb-8">The host has closed this room or the session ended.</p>
-            <button onclick="window.location.hash='#/home'; location.reload();" class="bg-white text-black px-8 py-3 rounded-full font-bold">Back to Home</button>
-        </div>
-    </div>
+<body class="room-bg">
 
     <!-- HEADER -->
-    <header class="glass-card py-4 px-6 md:px-12 flex justify-between items-center">
-        <a href="#/home" class="text-2xl font-black text-blue-500 tracking-tighter">eng4world</a>
-        <div id="header-btns" class="flex items-center gap-3">
-            <!-- Dynamic: Sign In / Create Room -->
+    <header class="fixed top-0 w-full z-50 glass py-4 px-6 md:px-12 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black">E</div>
+            <h1 class="text-xl font-black text-white tracking-tighter">eng4world</h1>
         </div>
+        <div id="header-nav" class="flex gap-4"></div>
     </header>
 
-    <!-- HOME VIEW -->
-    <section id="view-home" class="view-section active pt-24">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center py-12">
+    <!-- VIEW: HOME -->
+    <section id="view-home" class="view active pt-20">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center py-16">
             <div>
-                <span class="text-blue-500 font-bold tracking-widest uppercase text-sm">Language Community</span>
-                <h1 class="text-5xl md:text-7xl font-black mt-4 mb-6 leading-tight">Practice English <br>with <span class="text-blue-500">Real People.</span></h1>
-                <p class="text-gray-400 text-lg mb-10 max-w-lg">Join live audio/video rooms, meet people from 150+ countries, and boost your fluency instantly.</p>
-                <div class="flex gap-4">
-                    <button onclick="window.location.hash='#/signup'" class="bg-blue-600 px-10 py-4 rounded-full font-bold text-lg shadow-xl shadow-blue-600/20 hover:scale-105 transition">Start Speaking</button>
-                </div>
+                <span class="text-blue-500 font-bold text-sm tracking-widest uppercase mb-4 block">Live Language Community</span>
+                <h2 class="text-5xl md:text-7xl font-black leading-tight mb-6">Talk to the <br><span class="text-blue-600 underline">World.</span></h2>
+                <p class="text-gray-400 text-lg mb-8 max-w-md">Practice English live with native speakers and learners. Instant video calls, zero cost.</p>
+                <div id="hero-actions"></div>
             </div>
-            <div class="flex justify-center">
-                <img src="https://cdni.iconscout.com/illustration/premium/thumb/group-discussion-illustration-download-in-svg-png-gif-file-formats--meeting-man-woman-teamwork-business-pack-illustrations-5211833.png" class="hero-img w-full max-w-lg" alt="2D Character Illustration">
+            <div class="relative">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/online-video-calling-illustration-download-in-svg-png-gif-formats--conference-meeting-communication-business-pack-illustrations-3316688.png" class="w-full">
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-6 pb-20">
+        <div class="max-w-7xl mx-auto px-6 pb-24">
             <h3 class="text-2xl font-bold mb-8 flex items-center gap-3">
-                <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span> Active Groups
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> Active Rooms
             </h3>
-            <div id="rooms-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Rooms Load -->
-            </div>
+            <div id="rooms-list" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
         </div>
 
-        <footer class="mt-auto py-12 border-t border-white/5 bg-black/20 text-center">
-            <p class="text-2xl font-black text-blue-500 mb-4">eng4world</p>
-            <div class="flex justify-center gap-6 text-gray-500 text-sm mb-6">
-                <a href="#">About</a> <a href="#">Terms</a> <a href="#">Privacy</a> <a href="#">Contact</a>
+        <footer class="py-12 border-t border-white/5 glass text-center">
+            <div class="mb-4 flex justify-center gap-6 text-gray-500 text-xl">
+                <i class="fab fa-facebook hover:text-blue-500 cursor-pointer"></i>
+                <i class="fab fa-twitter hover:text-blue-400 cursor-pointer"></i>
+                <i class="fab fa-instagram hover:text-pink-500 cursor-pointer"></i>
             </div>
-            <p class="text-gray-600 text-xs">© 2024 eng4world. Designed for English learners worldwide.</p>
+            <p class="text-gray-600 text-sm">© 2024 eng4world Platform. Practice makes perfect.</p>
         </footer>
     </section>
 
-    <!-- AUTH VIEWS -->
-    <section id="view-login" class="view-section items-center justify-center pt-24">
-        <div class="glass-card p-10 rounded-3xl w-full max-w-md">
-            <h2 class="text-3xl font-black mb-8">Welcome Back</h2>
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="l-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500" required>
-                <input type="password" id="l-pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500" required>
-                <button class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Sign In</button>
+    <!-- VIEW: LOGIN/SIGNUP -->
+    <section id="view-auth" class="view items-center justify-center">
+        <div class="glass p-10 rounded-3xl w-full max-w-md">
+            <div id="auth-toggle" class="flex mb-8 bg-black/40 p-1 rounded-xl">
+                <button onclick="setAuthMode('login')" id="btn-mode-login" class="flex-1 py-2 rounded-lg font-bold bg-blue-600">Login</button>
+                <button onclick="setAuthMode('signup')" id="btn-mode-signup" class="flex-1 py-2 rounded-lg font-bold">Sign Up</button>
+            </div>
+            <form id="auth-form" class="space-y-4">
+                <div id="name-field" class="hidden">
+                    <input type="text" id="auth-name" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-blue-500 outline-none">
+                </div>
+                <input type="email" id="auth-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-blue-500 outline-none" required>
+                <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:border-blue-500 outline-none" required>
+                <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-bold shadow-xl shadow-blue-500/20">Continue</button>
             </form>
-            <p class="mt-6 text-center text-gray-500">New here? <a href="#/signup" class="text-blue-500 font-bold">Sign Up</a></p>
         </div>
     </section>
 
-    <section id="view-signup" class="view-section items-center justify-center pt-24">
-        <div class="glass-card p-10 rounded-3xl w-full max-w-md">
-            <h2 class="text-3xl font-black mb-8">Join the World</h2>
-            <form id="s-form" class="space-y-4">
-                <input type="text" id="s-name" placeholder="Full Name" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none" required>
-                <input type="email" id="s-email" placeholder="Email" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none" required>
-                <input type="password" id="s-pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl outline-none" required>
-                <button class="w-full bg-blue-600 py-4 rounded-2xl font-bold">Create Account</button>
-            </form>
-            <button onclick="googleAuth()" class="w-full mt-4 bg-white text-black py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
-                <img src="https://www.google.com/favicon.ico" class="w-4"> Continue with Google
-            </button>
-        </div>
-    </section>
+    <!-- VIEW: LIVE ROOM -->
+    <section id="view-room" class="view fixed inset-0 z-[60] bg-[#010409] !flex-row">
+        <!-- Live Call Stage -->
+        <div class="flex-1 relative flex flex-col items-center justify-center p-6 overflow-hidden">
+            <!-- Controls -->
+            <div class="ctrl-bar">
+                <div id="mic-btn" onclick="toggleMedia('mic')" class="icon-btn"><i class="fas fa-microphone-slash"></i></div>
+                <div id="cam-btn" onclick="toggleMedia('cam')" class="icon-btn"><i class="fas fa-video-slash"></i></div>
+                <div onclick="inviteLink()" class="icon-btn"><i class="fas fa-link"></i></div>
+                <div id="terminate-btn" onclick="hostTerminate()" class="icon-btn exit hidden"><i class="fas fa-ban"></i></div>
+                <div onclick="leaveRoom()" class="icon-btn exit"><i class="fas fa-phone-slash"></i></div>
+            </div>
 
-    <!-- ROOM VIEW -->
-    <section id="view-room" class="view-section fixed inset-0 z-[60] bg-[#02040a] !flex-row overflow-hidden">
-        <div class="flex-1 relative flex flex-col items-center p-6">
-            <!-- Floating Top -->
-            <div class="absolute top-6 left-1/2 -translate-x-1/2 flex gap-3 glass-card p-2 rounded-2xl z-50">
-                <button id="rmic" onclick="media('mic')" class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-400"><i class="fas fa-microphone-slash"></i></button>
-                <button id="rcam" onclick="media('cam')" class="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-400"><i class="fas fa-video-slash"></i></button>
-                <button onclick="leaveRoom()" class="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center text-white"><i class="fas fa-phone-slash"></i></button>
-                <div id="host-controls" class="hidden border-l border-white/10 pl-3">
-                    <button onclick="terminateRoom()" class="h-12 px-4 rounded-xl bg-red-500/20 text-red-500 font-bold text-xs uppercase tracking-widest hover:bg-red-500 hover:text-white transition">Terminate Group</button>
+            <!-- Participant Grid -->
+            <div id="video-stage" class="video-grid">
+                <!-- Local Tile -->
+                <div class="user-card" id="local-tile">
+                    <video id="v-local" autoplay playsinline muted class="hidden"></video>
+                    <img id="a-local" src="" class="avatar-placeholder">
+                    <div class="label">
+                        <span>You</span>
+                        <i id="m-local" class="fas fa-microphone-slash text-red-500"></i>
+                    </div>
                 </div>
             </div>
-
-            <!-- Content Area -->
-            <div class="flex-1 w-full flex items-center justify-center opacity-10">
-                <i class="fas fa-globe-africa text-[200px]"></i>
-            </div>
-
-            <!-- Video Grid -->
-            <div id="video-grid" class="w-full flex flex-wrap justify-center gap-4 mb-16">
-                <div class="user-tile" id="ltile">
-                    <video id="lvid" autoplay playsinline muted class="hidden"></video>
-                    <img id="lavatar" src="" class="avatar">
-                    <div class="user-label"><span>You (Owner)</span> <i id="lmic-icon" class="fas fa-microphone-slash text-red-500"></i></div>
-                </div>
-            </div>
-
-            <!-- Mobile Toggle -->
-            <button onclick="document.getElementById('room-sidebar').classList.toggle('open')" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center z-[200]">
-                <i class="fas fa-comments"></i>
-            </button>
         </div>
 
-        <aside id="room-sidebar" class="sidebar flex flex-col">
-            <div class="p-6 border-b border-white/5 bg-black/20">
-                <h4 id="rtitle" class="font-black text-xl text-blue-500 truncate">IELTS Practice</h4>
-                <p id="rcat" class="text-[10px] font-black uppercase text-gray-500 tracking-widest mt-1">General English</p>
+        <!-- Chat Sidebar -->
+        <aside class="chat-sidebar">
+            <div class="p-6 border-b border-white/5">
+                <h2 id="rm-title" class="font-black text-blue-500 uppercase tracking-tighter">Practice Room</h2>
+                <p id="rm-cat" class="text-xs text-gray-500 font-bold uppercase">English</p>
             </div>
-            <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 text-sm custom-scrollbar"></div>
-            <div class="p-4 bg-black/30">
-                <form id="chat-form" class="flex gap-2 glass-card p-2 rounded-2xl">
-                    <input id="chat-input" type="text" placeholder="Type message..." class="flex-1 bg-transparent border-none outline-none px-2">
-                    <button class="w-10 h-10 bg-blue-600 rounded-xl"><i class="fas fa-paper-plane"></i></button>
+            <div id="chat-msgs" class="flex-1 overflow-y-auto p-4 space-y-3 text-sm"></div>
+            <div class="p-4">
+                <form id="chat-send" class="flex gap-2">
+                    <input type="text" id="chat-in" placeholder="Type a message..." class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:border-blue-500">
+                    <button class="bg-blue-600 px-4 rounded-xl"><i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
         </aside>
     </section>
 
-    <!-- CREATE MODAL -->
-    <div id="c-modal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="glass-card p-10 rounded-[40px] w-full max-w-md">
-            <h3 class="text-3xl font-black mb-6">Start a Room</h3>
-            <form id="c-form" class="space-y-4">
-                <input type="text" id="ctitle" placeholder="What's the topic?" class="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none focus:border-blue-500" required>
-                <select id="ccat" class="w-full bg-slate-900 border border-white/10 p-5 rounded-2xl outline-none">
-                    <option>General English</option>
+    <!-- MODAL: CREATE ROOM -->
+    <div id="modal-create" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl w-full max-w-md">
+            <h3 class="text-2xl font-black mb-6">Create New Room</h3>
+            <form id="form-create" class="space-y-4">
+                <input type="text" id="cr-title" placeholder="Topic Title" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none" required>
+                <select id="cr-cat" class="w-full bg-slate-900 border border-white/10 p-4 rounded-xl outline-none">
+                    <option>General Practice</option>
                     <option>IELTS Prep</option>
-                    <option>Business Talk</option>
+                    <option>Business English</option>
                 </select>
                 <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="document.getElementById('c-modal').classList.add('hidden')" class="flex-1 py-4 border border-white/10 rounded-2xl font-bold">Cancel</button>
-                    <button type="submit" class="flex-1 py-4 bg-blue-600 rounded-2xl font-bold shadow-xl shadow-blue-600/30">Launch Room</button>
+                    <button type="button" onclick="showCreate(false)" class="flex-1 py-4 border border-white/10 rounded-xl">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 bg-blue-600 rounded-xl font-bold">Launch Room</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- FIREBASE -->
+    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -205,223 +175,200 @@
         firebase.initializeApp(config);
         const auth = firebase.auth(), db = firebase.firestore(), rtdb = firebase.database();
 
-        let currentUser = null, localStream = null, peers = {}, activeRoom = null;
-        let mState = { mic: false, cam: false };
+        let user = null, stream = null, peers = {}, activeId = null, mState = {mic: false, cam: false}, authMode = 'login';
 
         // ROUTER
         function route() {
-            const hash = window.location.hash || '#/home';
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelector('header').style.display = hash.startsWith('#/room/') ? 'none' : 'flex';
-
-            if (hash.startsWith('#/room/')) {
-                if (!auth.currentUser) return window.location.hash = '#/login';
+            const h = window.location.hash || '#/home';
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            if(h.startsWith('#/room/')) {
+                if(!auth.currentUser) { window.location.hash = '#/auth'; return; }
                 document.getElementById('view-room').classList.add('active');
-                initRoom(hash.split('/')[2]);
-            } else if (hash === '#/login') document.getElementById('view-login').classList.add('active');
-            else if (hash === '#/signup') document.getElementById('view-signup').classList.add('active');
-            else {
+                startRoom(h.split('/')[2]);
+            } else if(h === '#/auth') {
+                document.getElementById('view-auth').classList.add('active');
+            } else {
                 document.getElementById('view-home').classList.add('active');
-                loadRooms();
+                fetchRooms();
             }
         }
-        window.onhashchange = route;
+        window.addEventListener('hashchange', route);
 
-        auth.onAuthStateChanged(user => {
-            currentUser = user;
-            const h = document.getElementById('header-btns');
-            if (user) {
-                h.innerHTML = `
-                    <button onclick="document.getElementById('c-modal').classList.remove('hidden')" class="nav-btn bg-blue-600 text-white"><i class="fas fa-plus mr-2"></i> Create Room</button>
-                    <button onclick="auth.signOut()" class="nav-btn bg-white/5 text-red-400">Logout</button>
-                `;
+        auth.onAuthStateChanged(u => {
+            user = u;
+            const hNav = document.getElementById('header-nav'), hAct = document.getElementById('hero-actions');
+            if(u) {
+                const av = `https://ui-avatars.com/api/?name=${u.displayName}&background=3b82f6&color=fff`;
+                hNav.innerHTML = `<button onclick="showCreate(true)" class="bg-blue-600 px-4 py-2 rounded-lg font-bold text-xs">CREATE ROOM</button>
+                                 <img src="${av}" class="w-8 h-8 rounded-full border border-blue-500">
+                                 <button onclick="auth.signOut()" class="text-xs text-red-500 font-bold">EXIT</button>`;
+                hAct.innerHTML = `<button onclick="showCreate(true)" class="bg-blue-600 px-10 py-4 rounded-2xl font-bold text-lg">Start Practicing Now</button>`;
             } else {
-                h.innerHTML = `
-                    <a href="#/login" class="nav-btn text-white">Sign In</a>
-                    <a href="#/signup" class="nav-btn bg-white text-black">Sign Up</a>
-                `;
+                hNav.innerHTML = `<a href="#/auth" class="bg-blue-600 px-6 py-2 rounded-lg font-bold text-xs">JOIN FREE</a>`;
+                hAct.innerHTML = `<a href="#/auth" class="bg-blue-600 px-10 py-4 rounded-2xl font-bold text-lg">Create Free Account</a>`;
             }
             route();
         });
 
-        async function googleAuth() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            await auth.signInWithPopup(provider);
+        // AUTH
+        function setAuthMode(m) {
+            authMode = m;
+            document.getElementById('name-field').classList.toggle('hidden', m === 'login');
+            document.getElementById('btn-mode-login').classList.toggle('bg-blue-600', m === 'login');
+            document.getElementById('btn-mode-signup').classList.toggle('bg-blue-600', m === 'signup');
         }
-
-        // ROOMS LOGIC
-        document.getElementById('s-form').onsubmit = async (e) => {
+        document.getElementById('auth-form').onsubmit = async (e) => {
             e.preventDefault();
-            const c = await auth.createUserWithEmailAndPassword(document.getElementById('s-email').value, document.getElementById('s-pass').value);
-            await c.user.updateProfile({ displayName: document.getElementById('s-name').value });
-            window.location.hash = '#/home';
+            const em = document.getElementById('auth-email').value, ps = document.getElementById('auth-pass').value;
+            try {
+                if(authMode === 'signup') {
+                    const r = await auth.createUserWithEmailAndPassword(em, ps);
+                    await r.user.updateProfile({ displayName: document.getElementById('auth-name').value });
+                } else { await auth.signInWithEmailAndPassword(em, ps); }
+                window.location.hash = '#/home';
+            } catch(err) { alert(err.message); }
         };
 
-        document.getElementById('login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            await auth.signInWithEmailAndPassword(document.getElementById('l-email').value, document.getElementById('l-pass').value);
-            window.location.hash = '#/home';
-        };
-
-        document.getElementById('c-form').onsubmit = async (e) => {
+        // ROOMS
+        function showCreate(s) { document.getElementById('modal-create').classList.toggle('hidden', !s); }
+        document.getElementById('form-create').onsubmit = async (e) => {
             e.preventDefault();
             const d = await db.collection('rooms').add({
-                title: document.getElementById('ctitle').value,
-                category: document.getElementById('ccat').value,
-                host: currentUser.displayName, hostId: currentUser.uid,
-                status: 'active',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                title: document.getElementById('cr-title').value,
+                cat: document.getElementById('cr-cat').value,
+                host: user.displayName, hostId: user.uid,
+                created: firebase.firestore.FieldValue.serverTimestamp()
             });
-            document.getElementById('c-modal').classList.add('hidden');
+            showCreate(false);
             window.location.hash = `#/room/${d.id}`;
         };
 
-        function loadRooms() {
-            db.collection('rooms').where('status', '==', 'active').orderBy('createdAt', 'desc').onSnapshot(snap => {
-                const g = document.getElementById('rooms-grid'); g.innerHTML = '';
+        function fetchRooms() {
+            db.collection('rooms').orderBy('created', 'desc').onSnapshot(snap => {
+                const l = document.getElementById('rooms-list'); l.innerHTML = '';
                 snap.forEach(doc => {
                     const r = doc.data();
-                    g.innerHTML += `
-                        <div onclick="window.location.hash='#/room/${doc.id}'" class="glass-card p-8 rounded-[32px] cursor-pointer hover:border-blue-500 transition-all">
-                            <span class="text-[10px] font-black uppercase text-blue-500 tracking-widest">${r.category}</span>
-                            <h4 class="text-2xl font-black mt-3 mb-6">${r.title}</h4>
-                            <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">${r.host[0]}</div><span class="text-sm text-gray-400">Host: ${r.host}</span></div>
-                        </div>`;
+                    l.innerHTML += `<div onclick="window.location.hash='#/room/${doc.id}'" class="glass p-6 rounded-3xl cursor-pointer hover:border-blue-500 transition group">
+                        <span class="text-[10px] text-blue-500 font-bold uppercase tracking-widest">${r.cat}</span>
+                        <h4 class="text-xl font-bold mt-2 mb-4 group-hover:text-blue-400">${r.title}</h4>
+                        <p class="text-sm text-gray-500">By ${r.host}</p>
+                    </div>`;
                 });
             });
         }
 
-        // ROOM & WEBRTC
-        async function initRoom(id) {
-            activeRoom = id;
-            const doc = await db.collection('rooms').doc(id).get();
-            if(!doc.exists || doc.data().status === 'closed') return window.location.hash = '#/home';
-            
-            const data = doc.data();
-            document.getElementById('rtitle').innerText = data.title;
-            document.getElementById('rcat').innerText = data.category;
-            document.getElementById('host-controls').classList.toggle('hidden', data.hostId !== currentUser.uid);
+        // LIVE VIDEO LOGIC (WebRTC)
+        async function startRoom(id) {
+            activeId = id;
+            const rSnap = await db.collection('rooms').doc(id).get();
+            if(!rSnap.exists) { leaveRoom(); return; }
+            if(rSnap.data().hostId === user.uid) document.getElementById('terminate-btn').classList.remove('hidden');
 
-            const avatar = currentUser.photoURL || `https://ui-avatars.com/api/?name=${currentUser.displayName}&background=0ea5e9&color=fff&size=128`;
-            document.getElementById('lavatar').src = avatar;
+            db.collection('rooms').doc(id).onSnapshot(s => { if(!s.exists) { alert("Host ended room."); leaveRoom(); } });
 
-            if(!localStream) {
-                localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-                document.getElementById('lvid').srcObject = localStream;
-                localStream.getTracks().forEach(t => t.enabled = false);
+            document.getElementById('rm-title').innerText = rSnap.data().title;
+            document.getElementById('rm-cat').innerText = rSnap.data().cat;
+            document.getElementById('a-local').src = `https://ui-avatars.com/api/?name=${user.displayName}&background=random`;
+
+            if(!stream) {
+                stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+                document.getElementById('v-local').srcObject = stream;
+                stream.getTracks().forEach(t => t.enabled = false);
             }
 
-            // Sync with DB to detect termination
-            db.collection('rooms').doc(id).onSnapshot(snap => {
-                if(!snap.exists || snap.data().status === 'closed') {
-                    document.getElementById('room-overlay').style.display = 'flex';
-                }
-            });
-
-            const pRef = rtdb.ref(`presence/${id}/${currentUser.uid}`);
-            pRef.set({ name: currentUser.displayName, avatar, mic: false, cam: false });
+            const pRef = rtdb.ref(`presence/${id}/${user.uid}`);
+            pRef.set({ name: user.displayName, mic: false, cam: false });
             pRef.onDisconnect().remove();
 
-            rtdb.ref(`presence/${id}`).on('child_added', s => { if(s.key !== currentUser.uid) connect(s.key, true); });
-            rtdb.ref(`presence/${id}`).on('child_changed', s => updateUI(s.key, s.val()));
+            rtdb.ref(`presence/${id}`).on('child_added', s => { if(s.key !== user.uid) connect(s.key, true); });
+            rtdb.ref(`presence/${id}`).on('child_changed', s => updatePeer(s.key, s.val()));
             rtdb.ref(`presence/${id}`).on('child_removed', s => {
-                if(peers[s.key]) { peers[s.key].close(); delete peers[s.key]; document.getElementById(`tile-${s.key}`)?.remove(); }
+                if(peers[s.key]) { peers[s.key].close(); delete peers[s.key]; document.getElementById(`t-${s.key}`)?.remove(); }
             });
 
-            rtdb.ref(`signals/${id}/${currentUser.uid}`).on('child_added', async s => {
+            rtdb.ref(`sigs/${id}/${user.uid}`).on('child_added', async s => {
                 const { from, type, sdp, ice } = s.val();
                 if(!peers[from]) connect(from, false);
                 const pc = peers[from];
                 if(type === 'offer') {
                     await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-                    const ans = await pc.createAnswer();
-                    await pc.setLocalDescription(ans);
-                    rtdb.ref(`signals/${id}/${from}`).push({ from: currentUser.uid, type: 'answer', sdp: ans });
+                    const a = await pc.createAnswer(); await pc.setLocalDescription(a);
+                    rtdb.ref(`sigs/${id}/${from}`).push({ from: user.uid, type: 'answer', sdp: a });
                 } else if(type === 'answer') await pc.setRemoteDescription(new RTCSessionDescription(sdp));
                 else if(type === 'ice') await pc.addIceCandidate(new RTCIceCandidate(ice));
                 s.ref.remove();
             });
-
             initChat(id);
         }
 
-        function connect(uid, isOffer) {
+        function connect(uid, offer) {
             if(peers[uid]) return;
             const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
             peers[uid] = pc;
-            localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-            pc.onicecandidate = e => { if(e.candidate) rtdb.ref(`signals/${activeRoom}/${uid}`).push({ from: currentUser.uid, type: 'ice', ice: e.candidate }); };
+            stream.getTracks().forEach(t => pc.addTrack(t, stream));
+            pc.onicecandidate = e => { if(e.candidate) rtdb.ref(`sigs/${activeId}/${uid}`).push({ from: user.uid, type: 'ice', ice: e.candidate }); };
             pc.ontrack = e => {
-                let tile = document.getElementById(`tile-${uid}`);
-                if(!tile) {
-                    tile = document.createElement('div'); tile.className = 'user-tile'; tile.id = `tile-${uid}`;
-                    tile.innerHTML = `<video id="v-${uid}" autoplay playsinline class="hidden"></video><img id="a-${uid}" src="" class="avatar"><div class="user-label"><span id="n-${uid}">User</span><i id="m-${uid}" class="fas fa-microphone-slash text-red-500"></i></div>`;
-                    document.getElementById('video-grid').appendChild(tile);
+                let t = document.getElementById(`t-${uid}`);
+                if(!t) {
+                    t = document.createElement('div'); t.className = 'user-card'; t.id = `t-${uid}`;
+                    t.innerHTML = `<video id="v-${uid}" autoplay playsinline class="hidden"></video><img id="a-${uid}" src="https://ui-avatars.com/api/?name=User" class="avatar-placeholder"><div class="label"><span id="n-${uid}">User</span><i id="m-${uid}" class="fas fa-microphone-slash text-red-500"></i></div>`;
+                    document.getElementById('video-stage').appendChild(t);
                 }
                 document.getElementById(`v-${uid}`).srcObject = e.streams[0];
-                rtdb.ref(`presence/${activeRoom}/${uid}`).once('value', s => { if(s.exists()) updateUI(uid, s.val()); });
             };
-            if(isOffer) {
-                pc.onnegotiationneeded = async () => {
-                    const off = await pc.createOffer(); await pc.setLocalDescription(off);
-                    rtdb.ref(`signals/${activeRoom}/${uid}`).push({ from: currentUser.uid, type: 'offer', sdp: off });
-                };
-            }
+            if(offer) pc.onnegotiationneeded = async () => {
+                const o = await pc.createOffer(); await pc.setLocalDescription(o);
+                rtdb.ref(`sigs/${activeId}/${uid}`).push({ from: user.uid, type: 'offer', sdp: o });
+            };
         }
 
-        function updateUI(uid, data) {
-            if(uid === currentUser.uid) return;
-            const v = document.getElementById(`v-${uid}`), a = document.getElementById(`a-${uid}`), m = document.getElementById(`m-${uid}`), n = document.getElementById(`n-${uid}`);
-            if(n) n.innerText = data.name; if(a) a.src = data.avatar;
-            if(data.cam) { v?.classList.remove('hidden'); a?.classList.add('hidden'); } else { v?.classList.add('hidden'); a?.classList.remove('hidden'); }
+        function updatePeer(uid, data) {
+            const v = document.getElementById(`v-${uid}`), a = document.getElementById(`a-${uid}`), m = document.getElementById(`m-${uid}`);
+            if(v) {
+                if(data.cam) { v.classList.remove('hidden'); a.classList.add('hidden'); }
+                else { v.classList.add('hidden'); a.classList.remove('hidden'); }
+            }
             if(m) m.className = data.mic ? 'fas fa-microphone text-blue-500' : 'fas fa-microphone-slash text-red-500';
         }
 
-        function media(type) {
-            if(type === 'mic') {
-                mState.mic = !mState.mic; localStream.getAudioTracks()[0].enabled = mState.mic;
-                document.getElementById('rmic').classList.toggle('bg-blue-600', mState.mic);
-                document.getElementById('rmic').innerHTML = mState.mic ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
-                document.getElementById('lmic-icon').className = mState.mic ? 'fas fa-microphone text-blue-500' : 'fas fa-microphone-slash text-red-500';
-            } else {
-                mState.cam = !mState.cam; localStream.getVideoTracks()[0].enabled = mState.cam;
-                document.getElementById('rcam').classList.toggle('bg-blue-600', mState.cam);
-                document.getElementById('rcam').innerHTML = mState.cam ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
-                document.getElementById('lvid').classList.toggle('hidden', !mState.cam);
-                document.getElementById('lavatar').classList.toggle('hidden', mState.cam);
-            }
-            rtdb.ref(`presence/${activeRoom}/${currentUser.uid}`).update({ mic: mState.mic, cam: mState.cam });
-        }
-
-        async function terminateRoom() {
-            if(!confirm("Terminate this group? This will kick everyone out and delete all messages.")) return;
-            // Delete messages subcollection (client side can only delete individual docs, host clears parent status)
-            await db.collection('rooms').doc(activeRoom).update({ status: 'closed' });
-            leaveRoom();
-        }
-
-        function leaveRoom() { 
-            rtdb.ref(`presence/${activeRoom}/${currentUser.uid}`).remove();
-            location.reload(); 
+        function toggleMedia(type) {
+            const t = type === 'mic' ? stream.getAudioTracks()[0] : stream.getVideoTracks()[0];
+            t.enabled = !t.enabled;
+            mState[type] = t.enabled;
+            document.getElementById(`${type}-btn`).classList.toggle('on', t.enabled);
+            document.getElementById(`${type}-btn`).innerHTML = `<i class="fas fa-${type === 'mic' ? (t.enabled ? 'microphone' : 'microphone-slash') : (t.enabled ? 'video' : 'video-slash')}"></i>`;
+            if(type === 'mic') document.getElementById('m-local').className = t.enabled ? 'fas fa-microphone text-blue-500' : 'fas fa-microphone-slash text-red-500';
+            else { document.getElementById('v-local').classList.toggle('hidden', !t.enabled); document.getElementById('a-local').classList.toggle('hidden', t.enabled); }
+            rtdb.ref(`presence/${activeId}/${user.uid}`).update(mState);
         }
 
         function initChat(id) {
-            const b = document.getElementById('chat-box');
-            db.collection('rooms').doc(id).collection('messages').orderBy('time', 'asc').onSnapshot(snap => {
-                b.innerHTML = '';
-                snap.forEach(m => {
+            const b = document.getElementById('chat-msgs');
+            db.collection('rooms').doc(id).collection('msgs').orderBy('t', 'asc').onSnapshot(s => {
+                b.innerHTML = ''; s.forEach(m => {
                     const d = m.data();
-                    b.innerHTML += `<div><span class="font-black text-blue-500">${d.name}:</span> <span class="text-gray-300 ml-1">${d.text}</span></div>`;
+                    b.innerHTML += `<div><span class="font-bold text-blue-500">${d.n}:</span> <span class="text-gray-300 ml-1">${d.m}</span></div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
-            document.getElementById('chat-form').onsubmit = async (e) => {
-                e.preventDefault();
-                const i = document.getElementById('chat-input'); if(!i.value.trim()) return;
-                await db.collection('rooms').doc(id).collection('messages').add({ name: currentUser.displayName, text: i.value, time: firebase.firestore.FieldValue.serverTimestamp() });
+            document.getElementById('chat-send').onsubmit = async e => {
+                e.preventDefault(); const i = document.getElementById('chat-in'); if(!i.value) return;
+                await db.collection('rooms').doc(id).collection('msgs').add({ n: user.displayName, m: i.value, t: firebase.firestore.FieldValue.serverTimestamp() });
                 i.value = '';
             };
         }
+
+        async function hostTerminate() {
+            if(confirm("Terminate room?")) { await db.collection('rooms').doc(activeId).delete(); leaveRoom(); }
+        }
+
+        function leaveRoom() {
+            if(stream) stream.getTracks().forEach(t => t.stop());
+            window.location.hash = '#/home';
+            location.reload();
+        }
+
+        function inviteLink() { navigator.clipboard.writeText(window.location.href); alert("Copied!"); }
     </script>
 </body>
 </html>
