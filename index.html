@@ -3,679 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eng4world | Practice English Together</title>
+    <title>Darbhanga Sikho AI | Multi-Voice Community</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --glass: rgba(15, 23, 42, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --neon: #38bdf8;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a, #020617);
-            color: #f8fafc;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid var(--border); }
-        .glass-card { background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass-card:hover { transform: translateY(-4px); border-color: var(--neon); box-shadow: 0 10px 30px -10px rgba(56, 189, 248, 0.3); }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade { animation: fadeIn 0.4s ease forwards; }
-        
-        /* Room Grid */
-        #video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            width: 100%;
-        }
-        .video-container {
-            position: relative;
-            aspect-ratio: 16/9;
-            background: #1e293b;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            border: 2px solid #334155;
-        }
-        .video-container.active-speaker { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .online { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-
-        /* Hide sections */
-        .page-section { display: none; }
-        .page-section.active { display: block; }
-
-        .btn-neon {
-            background: #0ea5e9;
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
-            transition: 0.3s;
-        }
-        .btn-neon:hover {
-            box-shadow: 0 0 25px rgba(14, 165, 233, 0.6);
-            transform: scale(1.02);
-        }
+        body { font-family: 'Outfit', sans-serif; background-color: #050810; color: white; overflow-x: hidden; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+        .ai-glow { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); border: 1px solid rgba(99, 102, 241, 0.5); }
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%; }
+        video { width: 100%; border-radius: 1rem; background: #1e293b; transform: scaleX(-1); }
+        .badge-live { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <!-- NAV BAR -->
-    <nav id="main-nav" class="fixed top-0 w-full z-50 glass border-b border-white/5 px-6 py-4 flex justify-between items-center hidden">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="location.hash='#/home'">
-            <div class="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/20">
-                <i class="fas fa-globe text-white text-xl"></i>
-            </div>
-            <span class="text-xl font-extrabold tracking-tighter">eng4<span class="text-sky-400">world</span></span>
-        </div>
-        <div class="flex items-center gap-6">
-            <div class="hidden md:flex items-center gap-4 text-sm font-medium text-slate-400">
-                <span class="flex items-center gap-2"><span class="status-dot online"></span> <span id="global-online-count">0</span> Online</span>
-            </div>
-            <div class="flex items-center gap-3 pl-6 border-l border-white/10">
-                <img id="nav-user-avatar" src="" class="w-9 h-9 rounded-full border border-sky-500/50 object-cover">
-                <button onclick="authManager.logout()" class="text-slate-400 hover:text-white transition-colors">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- AUTH SECTION -->
-    <section id="auth-page" class="page-section min-h-screen flex items-center justify-center p-6">
-        <div class="w-full max-w-md animate-fade">
-            <div class="text-center mb-10">
-                <h1 class="text-4xl font-black mb-2">Welcome to <span class="text-sky-400">eng4world</span></h1>
-                <p class="text-slate-400">Practice English with people around the world</p>
-            </div>
-            
-            <div class="glass p-8 rounded-3xl shadow-2xl">
-                <!-- Tabs -->
-                <div class="flex gap-4 mb-8 p-1 bg-slate-900/50 rounded-2xl">
-                    <button id="tab-login" onclick="authManager.switchTab('login')" class="flex-1 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white">Login</button>
-                    <button id="tab-signup" onclick="authManager.switchTab('signup')" class="flex-1 py-3 rounded-xl font-bold transition-all text-slate-400">Sign Up</button>
+    <!-- APP WRAPPER -->
+    <div id="app">
+        <!-- NAVIGATION -->
+        <nav class="sticky top-0 z-50 glass py-4 px-6 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.hash=''">
+                <div class="p-2 bg-indigo-600 rounded-lg shadow-indigo-500/50 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                 </div>
+                <h1 class="text-xl font-black">DARBHANGA <span class="text-indigo-400">SIKHO AI</span></h1>
+            </div>
+            <div id="status-bar" class="hidden md:flex gap-4 items-center">
+                <span class="badge-live text-[10px] bg-red-500 px-2 py-1 rounded text-white font-bold">LIVE HUB</span>
+                <div id="user-count" class="text-slate-400 text-xs font-bold">0 LEARNERS ONLINE</div>
+            </div>
+        </nav>
 
-                <form id="auth-form" onsubmit="authManager.handleAuth(event)" class="space-y-5">
-                    <div id="name-field" class="hidden">
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Full Name</label>
-                        <input type="text" id="auth-name" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 transition-all" placeholder="John Doe">
-                    </div>
+        <!-- ROUTE: HOME -->
+        <div id="view-home" class="max-w-6xl mx-auto p-6 lg:p-12">
+            <header class="text-center mb-12">
+                <h2 class="text-5xl md:text-7xl font-black mb-6 tracking-tighter">Speak English <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Without Fear.</span></h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">The first AI-powered voice community for Darbhanga learners. Join a room, start talking, and let AI help you improve.</p>
+            </header>
+
+            <div class="max-w-2xl mx-auto mb-16">
+                <div class="glass p-2 rounded-3xl flex gap-2 ai-glow">
+                    <input id="input-topic" type="text" placeholder="What do you want to discuss? (e.g. Job Interview)" 
+                           class="bg-transparent flex-1 px-6 py-4 outline-none font-medium">
+                    <button id="btn-create" class="bg-indigo-600 hover:bg-indigo-500 px-8 py-4 rounded-2xl font-bold transition-all">Start Session</button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-8">
+                <h3 class="text-xl font-bold italic text-slate-300">Active Learning Pods</h3>
+                <div class="h-px flex-1 bg-white/10"></div>
+            </div>
+
+            <div id="room-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Rooms dynamic -->
+            </div>
+        </div>
+
+        <!-- ROUTE: ROOM (HIDDEN BY DEFAULT) -->
+        <div id="view-room" class="hidden fixed inset-0 z-[60] bg-[#050810] flex flex-col md:flex-row">
+            <!-- Left: Video & AI Transcription -->
+            <div class="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Email Address</label>
-                        <input type="email" id="auth-email" required class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 transition-all" placeholder="email@example.com">
+                        <h3 id="active-topic" class="text-2xl font-black text-white">English Practice</h3>
+                        <p id="room-timer" class="text-indigo-400 text-xs font-bold uppercase tracking-widest">Session: 30:00 remaining</p>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Password</label>
-                        <input type="password" id="auth-pass" required class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 transition-all" placeholder="••••••••">
-                    </div>
-                    <button type="submit" id="auth-submit-btn" class="w-full btn-neon py-4 rounded-2xl font-bold text-lg mt-4">Sign In</button>
-                </form>
-
-                <div class="relative my-8">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/5"></div></div>
-                    <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#121b2c] px-4 text-slate-500 font-bold">Or continue with</span></div>
+                    <button onclick="leaveRoom()" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-6 py-2 rounded-xl font-bold transition-all border border-red-500/20">Exit</button>
                 </div>
 
-                <button onclick="authManager.googleLogin()" class="w-full bg-white text-slate-900 py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-100 transition-all">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/02-2x.png" class="w-5">
-                    Google Account
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOME SECTION -->
-    <section id="home-page" class="page-section pt-32 pb-20 px-6 max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
-            <div>
-                <h2 class="text-4xl font-black mb-2">Voice Hotspots</h2>
-                <p class="text-slate-400 italic">Join a room to start talking instantly.</p>
-            </div>
-            <button onclick="ui.toggleCreateModal(true)" class="btn-neon px-8 py-4 rounded-2xl font-bold flex items-center gap-3">
-                <i class="fas fa-plus"></i> Create New Room
-            </button>
-        </div>
-
-        <!-- Filters -->
-        <div class="flex gap-3 mb-10 overflow-x-auto pb-2" id="language-filters">
-            <button class="glass px-6 py-2 rounded-full border-sky-500 text-sky-400 font-bold">All Languages</button>
-            <button class="glass px-6 py-2 rounded-full hover:border-white/20 transition-all">English</button>
-            <button class="glass px-6 py-2 rounded-full hover:border-white/20 transition-all">Spanish</button>
-            <button class="glass px-6 py-2 rounded-full hover:border-white/20 transition-all">IELTS Prep</button>
-        </div>
-
-        <!-- Rooms Grid -->
-        <div id="rooms-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Room cards dynamically added here -->
-        </div>
-    </section>
-
-    <!-- ROOM INTERFACE -->
-    <section id="room-page" class="page-section fixed inset-0 z-[100] bg-[#020617] flex flex-col hidden">
-        <!-- Room Header -->
-        <div class="p-4 glass flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <button onclick="roomManager.leaveRoom()" class="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <div>
-                    <h3 id="active-room-title" class="font-bold text-lg leading-tight">...</h3>
-                    <p id="active-room-category" class="text-xs text-sky-400 uppercase font-black tracking-widest">General</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <div id="connection-status" class="hidden md:block text-[10px] font-bold bg-green-500/20 text-green-400 px-3 py-1 rounded-full uppercase">Secure P2P Active</div>
-                <button onclick="ui.copyInvite()" class="glass px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
-                    <i class="fas fa-link"></i> <span class="hidden sm:inline">Invite</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
-            <!-- Main Video Area -->
-            <div class="flex-1 p-4 overflow-y-auto">
-                <div id="video-grid">
-                    <!-- Local user -->
-                    <div id="local-video-container" class="video-container">
-                        <video id="localVideo" autoplay playsinline muted></video>
-                        <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2">
-                            <span id="local-name">You</span>
-                            <i id="local-mic-icon" class="fas fa-microphone text-sky-400"></i>
-                        </div>
+                <!-- Video Grid -->
+                <div id="video-grid" class="video-grid mb-6">
+                    <div class="relative">
+                        <video id="local-video" autoplay playsinline muted class="border-2 border-indigo-500"></video>
+                        <span class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg text-xs">You</span>
                     </div>
-                    <!-- Remote users will be injected here -->
+                </div>
+
+                <!-- AI Learning Panel -->
+                <div class="glass rounded-3xl p-6 mt-auto">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-3 h-3 bg-green-500 rounded-full badge-live"></div>
+                        <h4 class="text-sm font-bold text-slate-400">AI LIVE TRANSCRIPTION (BETA)</h4>
+                    </div>
+                    <p id="transcription" class="text-xl text-slate-300 leading-relaxed italic">Start speaking to see transcription...</p>
+                    
+                    <div class="mt-6 flex flex-wrap gap-2">
+                        <button onclick="getTopicPrompt()" class="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-xs font-bold border border-white/10">🎲 Get Topic Prompt</button>
+                        <button id="toggle-mic" class="bg-indigo-600 px-4 py-2 rounded-lg text-xs font-bold">🎤 Mic: ON</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Side Chat -->
-            <div id="chat-panel" class="w-full md:w-80 lg:w-96 border-l border-white/5 glass flex flex-col">
-                <div class="p-4 border-b border-white/5 font-bold text-sm uppercase tracking-widest text-slate-500">Live Chat</div>
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-                <div class="p-4">
-                    <form onsubmit="roomManager.sendMessage(event)" class="relative">
-                        <input id="chat-input" type="text" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-3 pr-12 outline-none focus:border-sky-500" placeholder="Type message...">
-                        <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-sky-500 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-paper-plane text-xs"></i>
+            <!-- Right: Chat Sidebar -->
+            <div class="w-full md:w-80 lg:w-96 glass border-l border-white/5 flex flex-col">
+                <div class="p-6 border-b border-white/5 font-black text-lg">Group Chat</div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4 chat-scroll">
+                    <!-- Messages -->
+                </div>
+                <div class="p-4 bg-white/5">
+                    <form id="chat-form" class="flex gap-2">
+                        <input id="chat-input" type="text" placeholder="Type a message..." class="bg-slate-900 border border-white/10 rounded-xl px-4 py-3 flex-1 text-sm outline-none focus:border-indigo-500">
+                        <button class="bg-indigo-600 p-3 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-
-        <!-- Controls Footer -->
-        <div class="p-6 glass-card border-t border-white/5 flex justify-center items-center gap-4 md:gap-8">
-            <button id="btn-mic" onclick="roomManager.toggleMic()" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-xl transition-all hover:bg-slate-700">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button id="btn-video" onclick="roomManager.toggleVideo()" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-xl transition-all hover:bg-slate-700">
-                <i class="fas fa-video"></i>
-            </button>
-            <button id="btn-share" onclick="roomManager.toggleScreen()" class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-xl transition-all hover:bg-slate-700">
-                <i class="fas fa-desktop"></i>
-            </button>
-            <button onclick="roomManager.leaveRoom()" class="w-14 h-14 rounded-2xl bg-red-500/20 text-red-500 flex items-center justify-center text-xl transition-all hover:bg-red-500 hover:text-white">
-                <i class="fas fa-phone-slash"></i>
-            </button>
-        </div>
-    </section>
-
-    <!-- CREATE ROOM MODAL -->
-    <div id="create-modal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm flex items-center justify-center hidden p-6">
-        <div class="w-full max-w-lg glass p-8 rounded-[2.5rem] animate-fade">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-2xl font-black">Create Room</h3>
-                <button onclick="ui.toggleCreateModal(false)" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
-            </div>
-            <form onsubmit="roomManager.createRoom(event)" class="space-y-6">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Room Title</label>
-                    <input type="text" id="room-title" required class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500" placeholder="e.g. Daily IELTS Discussion">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Category</label>
-                        <select id="room-lang" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500">
-                            <option>English</option>
-                            <option>IELTS</option>
-                            <option>Spanish</option>
-                            <option>French</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-2 ml-1">Max Users</label>
-                        <select id="room-max" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500">
-                            <option value="2">2 People</option>
-                            <option value="4" selected>4 People</option>
-                            <option value="8">8 People</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="w-full btn-neon py-5 rounded-2xl font-bold text-lg">Launch Room</button>
-            </form>
-        </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getDatabase, ref, onValue, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, updateDoc, setDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // FIREBASE CONFIG - REPLACE THIS
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAKlo2eBKCQAeC3PkRz45ntdhYjH9YS3cE",
-authDomain: "eng4world-f78a2.firebaseapp.com",
-databaseURL: "https://eng4world-f78a2-default-rtdb.firebaseio.com",
-projectId: "eng4world-f78a2",
-storageBucket: "eng4world-f78a2.firebasestorage.app",
-messagingSenderId: "914297244703",
-appId: "1:914297244703:web:4f6530b891dfc06fb9192a"
-};
+            authDomain: "eng4world-f78a2.firebaseapp.com",
+            projectId: "eng4world-f78a2",
+            storageBucket: "eng4world-f78a2.firebasestorage.app",
+            messagingSenderId: "914297244703",
+            appId: "1:914297244703:web:4f6530b891dfc06fb9192a"
+        };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
-        const rtdb = getDatabase(app);
-
-        // GLOBALS
-        const state = {
-            user: null,
-            peers: {}, // Remote connections
-            localStream: null,
-            activeRoomId: null,
-            isMicOn: true,
-            isVideoOn: false,
-            isScreenSharing: false
-        };
-
         const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
 
-        // --- AUTH MANAGER ---
-        window.authManager = {
-            currentTab: 'login',
-            switchTab(tab) {
-                this.currentTab = tab;
-                document.getElementById('tab-login').className = tab === 'login' ? 'flex-1 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white' : 'flex-1 py-3 rounded-xl font-bold transition-all text-slate-400';
-                document.getElementById('tab-signup').className = tab === 'signup' ? 'flex-1 py-3 rounded-xl font-bold transition-all bg-sky-500 text-white' : 'flex-1 py-3 rounded-xl font-bold transition-all text-slate-400';
-                document.getElementById('name-field').classList.toggle('hidden', tab === 'login');
-                document.getElementById('auth-submit-btn').innerText = tab === 'login' ? 'Sign In' : 'Create Account';
-            },
-            async handleAuth(e) {
-                e.preventDefault();
-                const email = document.getElementById('auth-email').value;
-                const pass = document.getElementById('auth-pass').value;
-                const name = document.getElementById('auth-name').value;
+        let localStream;
+        let roomId = null;
+        let peerConnections = {}; // Store multiple connections
 
-                try {
-                    if (this.currentTab === 'signup') {
-                        const res = await createUserWithEmailAndPassword(auth, email, pass);
-                        await updateProfile(res.user, { displayName: name, photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${res.user.uid}` });
-                    } else {
-                        await signInWithEmailAndPassword(auth, email, pass);
-                    }
-                } catch (err) { alert(err.message); }
-            },
-            async googleLogin() {
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            },
-            logout() { signOut(auth); location.hash = '#/login'; }
-        };
-
-        // --- ROOM MANAGER ---
-        window.roomManager = {
-            async createRoom(e) {
-                e.preventDefault();
-                const title = document.getElementById('room-title').value;
-                const lang = document.getElementById('room-lang').value;
-                const max = document.getElementById('room-max').value;
-
-                const roomDoc = await addDoc(collection(db, "rooms"), {
-                    title,
-                    lang,
-                    maxUsers: parseInt(max),
-                    creatorId: state.user.uid,
-                    creatorName: state.user.displayName,
-                    createdAt: serverTimestamp()
-                });
-                
-                ui.toggleCreateModal(false);
-                location.hash = `#/room/${roomDoc.id}`;
-            },
-
-            async joinRoom(roomId) {
-                state.activeRoomId = roomId;
-                const roomSnap = await getDoc(doc(db, "rooms", roomId));
-                if (!roomSnap.exists()) return (location.hash = "#/home");
-                
-                const roomData = roomSnap.data();
-                document.getElementById('active-room-title').innerText = roomData.title;
-                document.getElementById('active-room-category').innerText = roomData.lang;
-
-                // Setup local stream
-                state.localStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: true, 
-                    audio: true 
-                });
-                
-                // Set default states
-                state.localStream.getVideoTracks()[0].enabled = state.isVideoOn;
-                state.localStream.getAudioTracks()[0].enabled = state.isMicOn;
-                document.getElementById('localVideo').srcObject = state.localStream;
-
-                // Presence in RTDB
-                const presenceRef = ref(rtdb, `rooms/${roomId}/participants/${state.user.uid}`);
-                set(presenceRef, {
-                    name: state.user.displayName,
-                    photo: state.user.photoURL,
-                    isMicOn: state.isMicOn,
-                    isVideoOn: state.isVideoOn
-                });
-                onDisconnect(presenceRef).remove();
-
-                // Signaling Listeners
-                this.initSignaling(roomId);
-                this.initChat(roomId);
-            },
-
-            initSignaling(roomId) {
-                const signalRef = collection(db, `rooms/${roomId}/signals`);
-                
-                // Listen for others joining (Offers)
-                onSnapshot(query(signalRef), (snapshot) => {
-                    snapshot.docChanges().forEach(async (change) => {
-                        const data = change.doc.data();
-                        if (change.type === 'added' && data.to === state.user.uid) {
-                            if (data.type === 'offer') this.handleOffer(data, change.doc.id);
-                            if (data.type === 'answer') this.handleAnswer(data);
-                            if (data.type === 'candidate') this.handleCandidate(data);
-                        }
-                    });
-                });
-
-                // Announce presence to others to trigger offers
-                setDoc(doc(collection(db, `rooms/${roomId}/members`), state.user.uid), {
-                    joinedAt: Date.now()
-                });
-
-                // Listen for new members and send them offers
-                onSnapshot(collection(db, `rooms/${roomId}/members`), (snapshot) => {
-                    snapshot.docChanges().forEach(async (change) => {
-                        const newMemberId = change.doc.id;
-                        if (change.type === 'added' && newMemberId !== state.user.uid) {
-                            this.sendOffer(newMemberId);
-                        }
-                    });
-                });
-            },
-
-            async sendOffer(toId) {
-                const pc = this.createPeerConnection(toId);
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                
-                addDoc(collection(db, `rooms/${state.activeRoomId}/signals`), {
-                    type: 'offer',
-                    offer: { sdp: offer.sdp, type: offer.type },
-                    from: state.user.uid,
-                    fromName: state.user.displayName,
-                    to: toId
-                });
-            },
-
-            async handleOffer(data, docId) {
-                const pc = this.createPeerConnection(data.from);
-                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-
-                addDoc(collection(db, `rooms/${state.activeRoomId}/signals`), {
-                    type: 'answer',
-                    answer: { sdp: answer.sdp, type: answer.type },
-                    from: state.user.uid,
-                    to: data.from
-                });
-            },
-
-            async handleAnswer(data) {
-                const pc = state.peers[data.from];
-                if (pc) await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-            },
-
-            async handleCandidate(data) {
-                const pc = state.peers[data.from];
-                if (pc) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-            },
-
-            createPeerConnection(peerId) {
-                const pc = new RTCPeerConnection(servers);
-                state.peers[peerId] = pc;
-
-                state.localStream.getTracks().forEach(track => pc.addTrack(track, state.localStream));
-
-                pc.onicecandidate = (e) => {
-                    if (e.candidate) {
-                        addDoc(collection(db, `rooms/${state.activeRoomId}/signals`), {
-                            type: 'candidate',
-                            candidate: e.candidate.toJSON(),
-                            from: state.user.uid,
-                            to: peerId
-                        });
-                    }
-                };
-
-                pc.ontrack = (e) => {
-                    this.addRemoteVideo(peerId, e.streams[0]);
-                };
-
-                return pc;
-            },
-
-            addRemoteVideo(peerId, stream) {
-                if (document.getElementById(`vid-${peerId}`)) return;
-                const container = document.createElement('div');
-                container.id = `cont-${peerId}`;
-                container.className = 'video-container animate-fade';
-                container.innerHTML = `
-                    <video id="vid-${peerId}" autoplay playsinline></video>
-                    <div class="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-2">
-                        <span>Partner</span>
-                    </div>
-                `;
-                document.getElementById('video-grid').appendChild(container);
-                document.getElementById(`vid-${peerId}`).srcObject = stream;
-            },
-
-            toggleMic() {
-                state.isMicOn = !state.isMicOn;
-                state.localStream.getAudioTracks()[0].enabled = state.isMicOn;
-                document.getElementById('btn-mic').innerHTML = state.isMicOn ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash text-red-500"></i>';
-                document.getElementById('local-mic-icon').className = state.isMicOn ? 'fas fa-microphone text-sky-400' : 'fas fa-microphone-slash text-red-500';
-            },
-
-            toggleVideo() {
-                state.isVideoOn = !state.isVideoOn;
-                state.localStream.getVideoTracks()[0].enabled = state.isVideoOn;
-                document.getElementById('btn-video').innerHTML = state.isVideoOn ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash text-red-500"></i>';
-            },
-
-            async toggleScreen() {
-                try {
-                    if (!state.isScreenSharing) {
-                        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                        const videoTrack = screenStream.getVideoTracks()[0];
-                        
-                        Object.values(state.peers).forEach(pc => {
-                            const sender = pc.getSenders().find(s => s.track.kind === 'video');
-                            sender.replaceTrack(videoTrack);
-                        });
-
-                        document.getElementById('localVideo').srcObject = screenStream;
-                        videoTrack.onended = () => this.toggleScreen();
-                        state.isScreenSharing = true;
-                    } else {
-                        const videoTrack = state.localStream.getVideoTracks()[0];
-                        Object.values(state.peers).forEach(pc => {
-                            const sender = pc.getSenders().find(s => s.track.kind === 'video');
-                            sender.replaceTrack(videoTrack);
-                        });
-                        document.getElementById('localVideo').srcObject = state.localStream;
-                        state.isScreenSharing = false;
-                    }
-                } catch (e) { console.error(e); }
-            },
-
-            initChat(roomId) {
-                const q = query(collection(db, `rooms/${roomId}/messages`), orderBy("time", "asc"));
-                onSnapshot(q, (snapshot) => {
-                    const box = document.getElementById('chat-messages');
-                    box.innerHTML = '';
-                    snapshot.forEach(doc => {
-                        const m = doc.data();
-                        const isMe = m.uid === state.user.uid;
-                        box.innerHTML += `
-                            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-fade">
-                                <span class="text-[10px] font-bold text-slate-500 mb-1 px-2">${m.name}</span>
-                                <div class="${isMe ? 'bg-sky-600' : 'bg-slate-800'} px-4 py-2 rounded-2xl text-sm max-w-[80%]">
-                                    ${m.text}
-                                </div>
-                            </div>
-                        `;
-                    });
-                    box.scrollTop = box.scrollHeight;
-                });
-            },
-
-            async sendMessage(e) {
-                e.preventDefault();
-                const input = document.getElementById('chat-input');
-                if (!input.value.trim()) return;
-                await addDoc(collection(db, `rooms/${state.activeRoomId}/messages`), {
-                    text: input.value,
-                    uid: state.user.uid,
-                    name: state.user.displayName,
-                    time: serverTimestamp()
-                });
-                input.value = '';
-            },
-
-            async leaveRoom() {
-                if (state.localStream) {
-                    state.localStream.getTracks().forEach(t => t.stop());
-                }
-                Object.values(state.peers).forEach(pc => pc.close());
-                state.peers = {};
-                
-                // Remove from presence
-                await deleteDoc(doc(db, `rooms/${state.activeRoomId}/members`, state.user.uid));
-                location.hash = "#/home";
-            }
-        };
-
-        // --- UI & ROUTER ---
-        window.ui = {
-            toggleCreateModal(show) {
-                document.getElementById('create-modal').classList.toggle('hidden', !show);
-            },
-            copyInvite() {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Invite link copied!");
-            },
-            renderRooms(rooms) {
-                const list = document.getElementById('rooms-list');
-                list.innerHTML = rooms.map(room => `
-                    <div class="glass-card p-6 rounded-[2rem] flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start mb-6">
-                                <span class="text-[10px] font-black bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full uppercase tracking-tighter">${room.lang}</span>
-                                <div class="flex -space-x-3">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${room.id}" class="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800">
-                                    <div class="w-8 h-8 rounded-full border-2 border-dashed border-slate-700 bg-transparent flex items-center justify-center text-[10px] text-slate-500 font-bold">+${room.maxUsers - 1}</div>
-                                </div>
-                            </div>
-                            <h4 class="text-xl font-bold mb-2">${room.title}</h4>
-                            <p class="text-slate-500 text-sm mb-6">Hosted by ${room.creatorName}</p>
-                        </div>
-                        <button onclick="location.hash='#/room/${room.id}'" class="w-full bg-slate-900 hover:bg-sky-600 py-4 rounded-2xl font-bold transition-all border border-white/5">
-                            Join Conversation
-                        </button>
-                    </div>
-                `).join('');
-            }
-        };
-
-        const router = () => {
-            const hash = location.hash || '#/home';
-            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-            document.getElementById('main-nav').classList.toggle('hidden', hash === '#/login');
-
-            if (!state.user && hash !== '#/login') {
-                location.hash = '#/login';
-                return;
-            }
-
-            if (hash === '#/login') {
-                document.getElementById('auth-page').classList.add('active');
-            } else if (hash === '#/home') {
-                document.getElementById('home-page').classList.add('active');
-                // Cleanup room if coming from room
-                if (state.activeRoomId) roomManager.leaveRoom();
-            } else if (hash.startsWith('#/room/')) {
-                const id = hash.split('/')[2];
-                document.getElementById('room-page').classList.remove('hidden');
-                document.getElementById('room-page').classList.add('active');
-                roomManager.joinRoom(id);
-            }
-        };
-
-        // --- INITIALIZATION ---
-        onAuthStateChanged(auth, (user) => {
-            state.user = user;
-            if (user) {
-                document.getElementById('nav-user-avatar').src = user.photoURL;
-                document.getElementById('local-name').innerText = user.displayName;
-                if (location.hash === '#/login' || !location.hash) location.hash = '#/home';
+        // --- ROUTING SYSTEM ---
+        const handleRoute = () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash) {
+                roomId = hash;
+                showView('view-room');
+                joinRoom(hash);
             } else {
-                location.hash = '#/login';
+                showView('view-home');
+                if (localStream) localStream.getTracks().forEach(t => t.stop());
             }
-            router();
+        };
+
+        const showView = (id) => {
+            document.querySelectorAll('#app > div[id^="view-"]').forEach(v => v.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        };
+
+        window.addEventListener('hashchange', handleRoute);
+        window.onload = handleRoute;
+
+        // --- DASHBOARD: LIST ROOMS ---
+        onSnapshot(collection(db, 'rooms'), (snapshot) => {
+            const list = document.getElementById('room-list');
+            list.innerHTML = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const card = document.createElement('div');
+                card.className = "glass p-6 rounded-3xl hover:ai-glow transition-all cursor-pointer";
+                card.onclick = () => window.location.hash = d.id;
+                card.innerHTML = `
+                    <div class="flex justify-between mb-4">
+                        <span class="text-[10px] font-bold bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded uppercase">${data.isPermanent ? 'Permanent Pod' : 'Temporary'}</span>
+                        <span class="text-xs text-slate-500">${new Date(data.createdAt?.toDate()).toLocaleTimeString()}</span>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">${data.topic}</h4>
+                    <p class="text-slate-500 text-sm">Join to practice with others.</p>
+                `;
+                list.appendChild(card);
+            });
         });
 
-        window.addEventListener('hashchange', router);
+        // --- CORE ACTION: CREATE ROOM ---
+        document.getElementById('btn-create').onclick = async () => {
+            const topic = document.getElementById('input-topic').value || "General English";
+            const roomRef = await addDoc(collection(db, 'rooms'), {
+                topic,
+                createdAt: serverTimestamp(),
+                userCount: 1,
+                isPermanent: false
+            });
+            window.location.hash = roomRef.id;
+        };
 
-        // Listen for Public Rooms
-        onSnapshot(collection(db, "rooms"), (snapshot) => {
-            const rooms = [];
-            snapshot.forEach(doc => rooms.push({ id: doc.id, ...doc.data() }));
-            ui.renderRooms(rooms);
-        });
+        // --- CORE ACTION: JOIN & WEBRTC ---
+        async function joinRoom(id) {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('local-video').srcObject = localStream;
 
-        // Global Presence
-        onValue(ref(rtdb, '.info/connected'), (snap) => {
-            if (snap.val() === true && state.user) {
-                const onlineRef = ref(rtdb, `presence/${state.user.uid}`);
-                set(onlineRef, true);
-                onDisconnect(onlineRef).remove();
+            const roomDoc = await getDoc(doc(db, 'rooms', id));
+            if (!roomDoc.exists()) return alert("Room expired!");
+            
+            document.getElementById('active-topic').innerText = roomDoc.data().topic;
+            
+            // Start AI Features
+            initSpeechRecognition();
+            initChat(id);
+            handleRoomCleanup(id, roomDoc.data());
+
+            // Simple Logic for "Joiners" to Signal presence
+            // In a production Mesh, you'd use a 'participants' subcollection
+            // and create an offer for every existing participant.
+            // Simplified for this demo:
+            console.log("Connected to room:", id);
+        }
+
+        // --- ADVANCED FEATURE: AI TRANSCRIPTION ---
+        function initSpeechRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                let result = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    result += event.results[i][0].transcript;
+                }
+                document.getElementById('transcription').innerText = result;
+            };
+
+            recognition.start();
+        }
+
+        // --- CHAT SYSTEM ---
+        function initChat(id) {
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-messages');
+
+            chatForm.onsubmit = async (e) => {
+                e.preventDefault();
+                if (!chatInput.value) return;
+                await addDoc(collection(db, `rooms/${id}/messages`), {
+                    text: chatInput.value,
+                    createdAt: serverTimestamp(),
+                    user: 'Learner'
+                });
+                chatInput.value = '';
+            };
+
+            onSnapshot(query(collection(db, `rooms/${id}/messages`), orderBy('createdAt')), (snap) => {
+                chatBox.innerHTML = '';
+                snap.forEach(m => {
+                    const d = m.data();
+                    const msg = document.createElement('div');
+                    msg.className = "bg-white/5 p-3 rounded-2xl text-sm";
+                    msg.innerHTML = `<span class="text-indigo-400 font-bold block text-[10px]">USER</span>${d.text}`;
+                    chatBox.appendChild(msg);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        // --- AUTO-CLEANUP LOGIC ---
+        async function handleRoomCleanup(id, data) {
+            const now = Date.now();
+            const created = data.createdAt?.toMillis() || now;
+            const diff = (now - created) / 1000 / 60; // minutes
+
+            // If older than 30 mins and not permanent, delete
+            if (diff > 30 && !data.isPermanent) {
+                await deleteDoc(doc(db, 'rooms', id));
+                window.location.hash = '';
             }
-        });
 
-        onValue(ref(rtdb, 'presence'), (snap) => {
-            document.getElementById('global-online-count').innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
-        });
+            // Simple timer display
+            let remaining = 30 - Math.floor(diff);
+            if (data.isPermanent) {
+                document.getElementById('room-timer').innerText = "UNLIMITED SESSION (ACTIVE)";
+            } else {
+                document.getElementById('room-timer').innerText = `Closing in ${remaining} mins`;
+            }
+        }
+
+        // --- ENGLISH TOPIC GENERATOR ---
+        window.getTopicPrompt = () => {
+            const prompts = [
+                "Describe your hometown in Darbhanga. What makes it special?",
+                "Do you think AI will replace English teachers? Why?",
+                "What is the most difficult part of learning English for you?",
+                "Talk about a movie that changed your perspective.",
+                "Where do you see yourself in 5 years professionally?"
+            ];
+            const random = prompts[Math.floor(Math.random() * prompts.length)];
+            alert("TOPIC: " + random);
+        };
+
+        window.leaveRoom = () => {
+            window.location.hash = '';
+        };
+
+        window.toggleMic = () => {
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+            document.getElementById('toggle-mic').innerText = `🎤 Mic: ${audioTrack.enabled ? 'ON' : 'OFF'}`;
+        };
 
     </script>
 </body>
